@@ -21,15 +21,16 @@ class AuthLoginTest extends TestCase
     public function user_can_login_with_correct_credentials(): void
     {
         $user = User::create([
-            'name'               => 'João Silva',
-            'email'              => 'joao@exemplo.com',
-            'password'           => bcrypt('Senha@1234'),
-            'email_verified_at'  => now(),
-            'onboarding_step'    => 3,
+            'name' => 'João Silva',
+            'email' => 'joao@exemplo.com',
+            'password' => bcrypt('Senha@1234'),
+            'email_verified_at' => now(),
+            'phone_verified_at' => now(),   // celular verificado
+            'onboarding_step' => 4,       // onboarding concluído
         ]);
 
         $this->post(route('auth.login.store'), [
-            'email'    => 'joao@exemplo.com',
+            'email' => 'joao@exemplo.com',
             'password' => 'Senha@1234',
         ])->assertRedirect(route('home'));
 
@@ -40,13 +41,13 @@ class AuthLoginTest extends TestCase
     public function login_fails_with_wrong_password(): void
     {
         User::create([
-            'name'     => 'João Silva',
-            'email'    => 'joao@exemplo.com',
+            'name' => 'João Silva',
+            'email' => 'joao@exemplo.com',
             'password' => bcrypt('Senha@1234'),
         ]);
 
         $this->post(route('auth.login.store'), [
-            'email'    => 'joao@exemplo.com',
+            'email' => 'joao@exemplo.com',
             'password' => 'senha-errada',
         ])->assertSessionHasErrors('email');
 
@@ -57,13 +58,13 @@ class AuthLoginTest extends TestCase
     public function login_redirects_unverified_user_to_verify_page(): void
     {
         User::create([
-            'name'     => 'João Silva',
-            'email'    => 'joao@exemplo.com',
+            'name' => 'João Silva',
+            'email' => 'joao@exemplo.com',
             'password' => bcrypt('Senha@1234'),
         ]);
 
         $this->post(route('auth.login.store'), [
-            'email'    => 'joao@exemplo.com',
+            'email' => 'joao@exemplo.com',
             'password' => 'Senha@1234',
         ])->assertRedirect(route('auth.verify.notice'));
     }
@@ -72,15 +73,15 @@ class AuthLoginTest extends TestCase
     public function login_redirects_incomplete_onboarding_to_correct_step(): void
     {
         $user = User::create([
-            'name'              => 'João Silva',
-            'email'             => 'joao@exemplo.com',
-            'password'          => bcrypt('Senha@1234'),
+            'name' => 'João Silva',
+            'email' => 'joao@exemplo.com',
+            'password' => bcrypt('Senha@1234'),
             'email_verified_at' => now(),
-            'onboarding_step'   => 2,
+            'onboarding_step' => 2,
         ]);
 
         $this->post(route('auth.login.store'), [
-            'email'    => 'joao@exemplo.com',
+            'email' => 'joao@exemplo.com',
             'password' => 'Senha@1234',
         ])->assertRedirect(route('onboarding.step2'));
     }
@@ -89,8 +90,8 @@ class AuthLoginTest extends TestCase
     public function authenticated_user_can_logout(): void
     {
         $user = User::create([
-            'name'     => 'João Silva',
-            'email'    => 'joao@exemplo.com',
+            'name' => 'João Silva',
+            'email' => 'joao@exemplo.com',
             'password' => bcrypt('Senha@1234'),
         ]);
 

@@ -36,17 +36,17 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
-    'onboarding_step' => 1,
+        'onboarding_step' => 1,
     ];
 
     protected function casts(): array
     {
         return [
-            'email_verified_at'              => 'datetime',
-            'phone_verified_at'              => 'datetime',
-            'verification_code_expires_at'   => 'datetime',
-            'birth_date'                     => 'date',
-            'onboarding_step'                => 'integer',
+            'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'verification_code_expires_at' => 'datetime',
+            'birth_date' => 'date',
+            'onboarding_step' => 'integer',
         ];
     }
 
@@ -54,7 +54,7 @@ class User extends Authenticatable
 
     public function hasCompletedOnboarding(): bool
     {
-        return $this->onboarding_step >= 3
+        return $this->onboarding_step >= 4
             && $this->phone_verified_at !== null;
     }
 
