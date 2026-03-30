@@ -10,14 +10,14 @@
     <p class="text-sm text-gray-500 mt-1">Precisamos dessas informações para emissão de notas fiscais.</p>
 </div>
 
-<form method="POST" action="{{ route('onboarding.step2.store') }}" class="space-y-5" id="profile-form">
+<form method="POST" action="{{ route('onboarding.step2.store') }}" class="space-y-5">
     @csrf
 
     {{-- Seletor de tipo --}}
     <div class="grid grid-cols-2 gap-3">
         <label class="cursor-pointer">
             <input type="radio" name="profile_type" value="cpf" class="peer sr-only"
-                   {{ old('profile_type') === 'cpf' ? 'checked' : '' }}>
+                   {{ old('profile_type', 'cpf') === 'cpf' ? 'checked' : '' }}>
             <div class="border-2 border-gray-200 rounded-xl p-4 text-center transition
                         peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
                 <div class="text-2xl mb-1">👤</div>
@@ -41,50 +41,43 @@
         <p class="text-red-500 text-xs">{{ $message }}</p>
     @enderror
 
-    {{-- Campos CPF --}}
-    <div id="cpf-fields" class="space-y-4 hidden">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
-            <input type="text" name="document_number" id="cpf-input"
-                   placeholder="000.000.000-00" maxlength="14"
-                   value="{{ old('document_number') }}"
-                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
-                          focus:ring-2 focus:ring-indigo-500 text-sm @error('document_number') border-red-400 @enderror">
-            @error('document_number')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento</label>
-            <input type="date" name="birth_date" value="{{ old('birth_date') }}"
-                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
-                          focus:ring-2 focus:ring-indigo-500 text-sm @error('birth_date') border-red-400 @enderror">
-            @error('birth_date')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+    {{-- UM único input de documento --}}
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" id="doc-label">CPF</label>
+        <input type="text" name="document_number" id="document_number"
+               placeholder="000.000.000-00" maxlength="18"
+               value="{{ old('document_number') }}"
+               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
+                      focus:ring-2 focus:ring-indigo-500 text-sm
+                      @error('document_number') border-red-400 @enderror">
+        @error('document_number')
+            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+        @enderror
     </div>
 
-    {{-- Campos CNPJ --}}
-    <div id="cnpj-fields" class="space-y-4 hidden">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ</label>
-            <input type="text" name="document_number" id="cnpj-input"
-                   placeholder="00.000.000/0000-00" maxlength="18"
-                   value="{{ old('document_number') }}"
-                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
-                          focus:ring-2 focus:ring-indigo-500 text-sm">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social</label>
-            <input type="text" name="company_name" value="{{ old('company_name') }}"
-                   placeholder="Nome da empresa conforme CNPJ"
-                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
-                          focus:ring-2 focus:ring-indigo-500 text-sm @error('company_name') border-red-400 @enderror">
-            @error('company_name')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+    {{-- Data de nascimento (só CPF) --}}
+    <div id="birth-date-field">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Data de nascimento</label>
+        <input type="date" name="birth_date" value="{{ old('birth_date') }}"
+               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
+                      focus:ring-2 focus:ring-indigo-500 text-sm
+                      @error('birth_date') border-red-400 @enderror">
+        @error('birth_date')
+            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+        @enderror
+    </div>
+
+    {{-- Razão social (só CNPJ) --}}
+    <div id="company-name-field" class="hidden">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social</label>
+        <input type="text" name="company_name" value="{{ old('company_name') }}"
+               placeholder="Nome da empresa conforme CNPJ"
+               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
+                      focus:ring-2 focus:ring-indigo-500 text-sm
+                      @error('company_name') border-red-400 @enderror">
+        @error('company_name')
+            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+        @enderror
     </div>
 
     <button type="submit"
@@ -95,36 +88,59 @@
 </form>
 
 <script>
-const radios = document.querySelectorAll('input[name="profile_type"]');
-const cpfFields  = document.getElementById('cpf-fields');
-const cnpjFields = document.getElementById('cnpj-fields');
+const radios     = document.querySelectorAll('input[name="profile_type"]');
+const docInput   = document.getElementById('document_number');
+const docLabel   = document.getElementById('doc-label');
+const birthField = document.getElementById('birth-date-field');
+const cnpjField  = document.getElementById('company-name-field');
 
-function toggleFields() {
-    const val = document.querySelector('input[name="profile_type"]:checked')?.value;
-    cpfFields.classList.toggle('hidden', val !== 'cpf');
-    cnpjFields.classList.toggle('hidden', val !== 'cnpj');
-}
-
-radios.forEach(r => r.addEventListener('change', toggleFields));
-toggleFields(); // mostra campos do old() se houver
-
-// Máscara CPF
-document.getElementById('cpf-input')?.addEventListener('input', function() {
-    let v = this.value.replace(/\D/g, '').slice(0, 11);
+function applyMaskCpf(v) {
+    v = v.replace(/\D/g, '').slice(0, 11);
     v = v.replace(/(\d{3})(\d)/, '$1.$2');
     v = v.replace(/(\d{3})(\d)/, '$1.$2');
     v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    this.value = v;
-});
+    return v;
+}
 
-// Máscara CNPJ
-document.getElementById('cnpj-input')?.addEventListener('input', function() {
-    let v = this.value.replace(/\D/g, '').slice(0, 14);
+function applyMaskCnpj(v) {
+    v = v.replace(/\D/g, '').slice(0, 14);
     v = v.replace(/(\d{2})(\d)/, '$1.$2');
     v = v.replace(/(\d{3})(\d)/, '$1.$2');
     v = v.replace(/(\d{3})(\d)/, '$1/$2');
     v = v.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
-    this.value = v;
+    return v;
+}
+
+function updateFields() {
+    const type = document.querySelector('input[name="profile_type"]:checked')?.value;
+
+    if (type === 'cnpj') {
+        docLabel.textContent      = 'CNPJ';
+        docInput.placeholder      = '00.000.000/0000-00';
+        docInput.maxLength        = 18;
+        birthField.classList.add('hidden');
+        cnpjField.classList.remove('hidden');
+        docInput.value = applyMaskCnpj(docInput.value);
+    } else {
+        docLabel.textContent      = 'CPF';
+        docInput.placeholder      = '000.000.000-00';
+        docInput.maxLength        = 14;
+        birthField.classList.remove('hidden');
+        cnpjField.classList.add('hidden');
+        docInput.value = applyMaskCpf(docInput.value);
+    }
+}
+
+docInput.addEventListener('input', function () {
+    const type = document.querySelector('input[name="profile_type"]:checked')?.value;
+    this.value = type === 'cnpj' ? applyMaskCnpj(this.value) : applyMaskCpf(this.value);
 });
+
+radios.forEach(r => r.addEventListener('change', function () {
+    docInput.value = ''; // limpa ao trocar tipo
+    updateFields();
+}));
+
+updateFields(); // estado inicial
 </script>
 @endsection

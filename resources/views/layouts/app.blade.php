@@ -40,11 +40,11 @@
                 {{-- Desktop: nav direita --}}
                 <nav class="hidden md:flex items-center gap-1">
                     @auth
-                        <a href="#" class="px-3 py-2 text-sm text-gray-600 hover:text-indigo-600
+                        <a href="{{ route('events.create') }}" class="px-3 py-2 text-sm text-gray-600 hover:text-indigo-600
                                            hover:bg-indigo-50 rounded-lg transition">
                             Criar Evento
                         </a>
-                        <a href="#" class="px-3 py-2 text-sm text-gray-600 hover:text-indigo-600
+                        <a href="{{ route('events.my') }}" class="px-3 py-2 text-sm text-gray-600 hover:text-indigo-600
                                            hover:bg-indigo-50 rounded-lg transition">
                             Meus Eventos
                         </a>
@@ -133,10 +133,10 @@
             {{-- Mobile: menu expandido --}}
             <div id="mobile-menu" class="md:hidden hidden border-t border-gray-100 py-3 space-y-1">
                 @auth
-                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <a href="{{ route('events.create') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Criar Evento
                     </a>
-                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <a href="{{ route('events.my') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Meus Eventos
                     </a>
                     <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">

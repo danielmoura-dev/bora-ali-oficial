@@ -32,27 +32,16 @@ class AuthService
             'verification_code_expires_at' => $expires,
         ])->save();
 
-        // Não envia e-mail real em ambiente de teste
         if (app()->environment('testing')) {
             return;
         }
 
-        \Resend\Laravel\Facades\Resend::emails()->send([
-            'from' => 'Bora Ali <noreply@seudominio.com.br>',
-            'to' => [$user->email],
-            'subject' => 'Seu código de verificação — Bora Ali',
-            'html' => "
-            <div style='font-family:sans-serif;max-width:480px;margin:0 auto'>
-                <h2>Olá, {$user->name}!</h2>
-                <p>Seu código de verificação é:</p>
-                <div style='font-size:40px;font-weight:bold;letter-spacing:12px;
-                            padding:20px;background:#f4f4f4;border-radius:8px;
-                            text-align:center'>{$code}</div>
-                <p style='color:#666;font-size:14px'>
-                    Válido por 15 minutos. Não compartilhe este código.
-                </p>
-            </div>
-        ",
+        // Em local, o código vai para storage/logs/laravel.log
+        // Em produção, trocar MAIL_MAILER=resend no .env
+        \Illuminate\Support\Facades\Log::info("=== CÓDIGO DE VERIFICAÇÃO ===", [
+            'usuario' => $user->email,
+            'codigo' => $code,
+            'expira' => $expires,
         ]);
     }
 

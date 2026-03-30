@@ -10,8 +10,8 @@ class WhatsAppService
 {
     public function sendVerificationCode(string $phone): string
     {
-        $code      = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $cacheKey  = "whatsapp_code_{$phone}";
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $cacheKey = "whatsapp_code_{$phone}";
 
         Cache::put($cacheKey, $code, now()->addMinutes(10));
 
@@ -19,10 +19,11 @@ class WhatsAppService
             return $code;
         }
 
-        $this->sendMessage(
-            phone: $phone,
-            message: "Seu código de verificação do Bora Ali é: *{$code}*\n\nVálido por 10 minutos. Não compartilhe.",
-        );
+        // Loga o código para uso em desenvolvimento
+        \Illuminate\Support\Facades\Log::info('=== CÓDIGO WHATSAPP ===', [
+            'phone' => $phone,
+            'code' => $code,
+        ]);
 
         return $code;
     }
@@ -30,7 +31,7 @@ class WhatsAppService
     public function verifyCode(string $phone, string $code): bool
     {
         $cacheKey = "whatsapp_code_{$phone}";
-        $stored   = Cache::get($cacheKey);
+        $stored = Cache::get($cacheKey);
 
         if (!$stored) {
             return false;
@@ -77,9 +78,9 @@ class WhatsAppService
     {
         try {
             Http::get(config('services.whatsapp.api_url'), [
-                'phone'   => $phone,
-                'text'    => $message,
-                'apikey'  => config('services.whatsapp.api_key'),
+                'phone' => $phone,
+                'text' => $message,
+                'apikey' => config('services.whatsapp.api_key'),
             ]);
         } catch (\Throwable $e) {
             Log::error('WhatsApp send failed', [
