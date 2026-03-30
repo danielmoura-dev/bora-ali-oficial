@@ -16,6 +16,13 @@ class EnsureOnboardingComplete
         'auth.verify.resend',
     ];
 
+    private array $step3Routes = [
+        'onboarding.step3',
+        'onboarding.step3.send',
+        'onboarding.step3.verify',
+        'onboarding.step3.confirm',
+    ];
+
     // Rotas de onboarding — acessíveis só com e-mail verificado
     private array $onboardingRoutes = [
         'onboarding.step2',
@@ -26,7 +33,7 @@ class EnsureOnboardingComplete
 
     public function handle(Request $request, Closure $next): Response
     {
-        $user      = $request->user();
+        $user = $request->user();
         $routeName = $request->route()?->getName();
 
         if (!$user) {
@@ -38,12 +45,12 @@ class EnsureOnboardingComplete
             return $next($request);
         }
 
-        // Sem e-mail verificado → vai para verificação
+        // Sem e-mail verificado → verificação
         if (!$user->isEmailVerified()) {
             return redirect()->route('auth.verify.notice');
         }
 
-        // E-mail verificado mas ainda no step 2 → só onboarding.step2 passa
+        // Step 2 → só rotas do step2 passam
         if ($user->onboarding_step === 2) {
             if (in_array($routeName, ['onboarding.step2', 'onboarding.step2.store'])) {
                 return $next($request);
@@ -51,9 +58,9 @@ class EnsureOnboardingComplete
             return redirect()->route('onboarding.step2');
         }
 
-        // Step 3 → só onboarding.step3 passa
+        // Step 3 → só rotas do step3 passam
         if ($user->onboarding_step === 3) {
-            if (in_array($routeName, ['onboarding.step3', 'onboarding.step3.store'])) {
+            if (in_array($routeName, $this->step3Routes)) {
                 return $next($request);
             }
             return redirect()->route('onboarding.step3');

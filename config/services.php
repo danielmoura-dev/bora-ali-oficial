@@ -34,6 +34,11 @@ return [
     'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'whatsapp' => [
+    'api_url' => env('WHATSAPP_API_URL'),
+    'api_key'  => env('WHATSAPP_API_KEY'),
+    ],
+    
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

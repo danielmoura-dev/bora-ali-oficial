@@ -22,16 +22,22 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 });
 
-// Auth — autenticados COM middleware de onboarding
+// Auth — autenticados com middleware de onboarding
 Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
 
+    // Verificação de e-mail
     Route::get('/verify',         [VerificationController::class, 'notice'])->name('auth.verify.notice');
     Route::post('/verify',        [VerificationController::class, 'submit'])->name('auth.verify.submit');
     Route::post('/verify/resend', [VerificationController::class, 'resend'])->name('auth.verify.resend');
 
+    // Onboarding Step 2
     Route::get('/onboarding/step2',  [OnboardingController::class, 'step2'])->name('onboarding.step2');
     Route::post('/onboarding/step2', [OnboardingController::class, 'step2Store'])->name('onboarding.step2.store');
 
-    Route::get('/onboarding/step3',  [OnboardingController::class, 'step3'])->name('onboarding.step3');
+    // Onboarding Step 3
+    Route::get('/onboarding/step3',          [OnboardingController::class, 'step3'])->name('onboarding.step3');
+    Route::post('/onboarding/step3/send',    [OnboardingController::class, 'step3Send'])->name('onboarding.step3.send');
+    Route::get('/onboarding/step3/verify',   [OnboardingController::class, 'step3Verify'])->name('onboarding.step3.verify');
+    Route::post('/onboarding/step3/confirm', [OnboardingController::class, 'step3Confirm'])->name('onboarding.step3.confirm');
 });
