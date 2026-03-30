@@ -12,18 +12,27 @@ class Event extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'title', 'slug', 'description',
-        'cover_image', 'venue_name', 'venue_address',
-        'city', 'state', 'starts_at', 'ends_at',
-        'status', 'is_free',
+        'user_id',
+        'title',
+        'slug',
+        'description',
+        'cover_image',
+        'venue_name',
+        'venue_address',
+        'city',
+        'state',
+        'starts_at',
+        'ends_at',
+        'status',
+        'is_free',
     ];
 
     protected function casts(): array
     {
         return [
             'starts_at' => 'datetime',
-            'ends_at'   => 'datetime',
-            'is_free'   => 'boolean',
+            'ends_at' => 'datetime',
+            'is_free' => 'boolean',
         ];
     }
 
@@ -32,6 +41,21 @@ class Event extends Model
     public function organizer()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function ticketTypes()
+    {
+        return $this->hasMany(TicketType::class)->orderBy('sort_order');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function hasAvailableTickets(): bool
+    {
+        return $this->ticketTypes->some(fn($t) => $t->isAvailable());
     }
 
     // ── Scopes ────────────────────────────────────────────────
@@ -44,10 +68,10 @@ class Event extends Model
     public function scopeCurrent(Builder $query): Builder
     {
         return $query->where('starts_at', '>=', now())
-                     ->orWhere(function ($q) {
-                         $q->where('starts_at', '<=', now())
-                           ->where('ends_at', '>=', now());
-                     });
+            ->orWhere(function ($q) {
+                $q->where('starts_at', '<=', now())
+                    ->where('ends_at', '>=', now());
+            });
     }
 
     public function scopeFinished(Builder $query): Builder
@@ -59,9 +83,9 @@ class Event extends Model
     {
         return $query->where(function ($q) use ($term) {
             $q->where('title', 'like', "%{$term}%")
-              ->orWhere('description', 'like', "%{$term}%")
-              ->orWhere('city', 'like', "%{$term}%")
-              ->orWhere('venue_name', 'like', "%{$term}%");
+                ->orWhere('description', 'like', "%{$term}%")
+                ->orWhere('city', 'like', "%{$term}%")
+                ->orWhere('venue_name', 'like', "%{$term}%");
         });
     }
 
