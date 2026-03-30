@@ -5,10 +5,11 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Onboarding\OnboardingController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 // Página inicial
-Route::get('/', fn () => view('home'))->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Auth — visitantes
 Route::middleware('guest')->group(function () {
