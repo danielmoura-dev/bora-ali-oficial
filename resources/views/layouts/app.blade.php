@@ -54,7 +54,7 @@
                                            hover:bg-indigo-50 rounded-lg transition">
                             Meus Eventos
                         </a>
-                        <a href="#"
+                        <a href="{{ route('tickets.my') }}"
                             class="px-3 py-2 text-sm text-gray-600 hover:text-indigo-600
                                            hover:bg-indigo-50 rounded-lg transition">
                             Meus Ingressos
@@ -149,7 +149,7 @@
                         class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Meus Eventos
                     </a>
-                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <a href="{{ route('tickets.my') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Meus Ingressos
                     </a>
                     <a href="{{ route('profile.show') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
