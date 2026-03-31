@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@use('Illuminate\Support\Facades\Storage')
 @section('title', 'Bora Ali — Eventos Regionais')
 
 @section('content')

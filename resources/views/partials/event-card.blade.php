@@ -1,5 +1,6 @@
-<article class="bg-white rounded-2xl border border-gray-100 overflow-hidden
-                hover:shadow-md transition group">
+<a href="{{ route('events.show', $event->slug) }}"
+   class="block bg-white rounded-2xl border border-gray-100 overflow-hidden
+          hover:shadow-md transition group">
 
     {{-- Capa --}}
     <div class="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100
@@ -49,4 +50,4 @@
             {{ $event->venue_name }} · {{ $event->city }}/{{ $event->state }}
         </p>
     </div>
-</article>
+</a>
