@@ -80,7 +80,7 @@
                             <div x-show="open" @click.outside="open = false"
                                 class="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg
                                         border border-gray-100 py-1 text-sm">
-                                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
                                     Perfil
                                 </a>
                                 <form method="POST" action="{{ route('auth.logout') }}">
@@ -152,7 +152,7 @@
                     <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Meus Ingressos
                     </a>
-                    <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <a href="{{ route('profile.show') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Perfil
                     </a>
                     <form method="POST" action="{{ route('auth.logout') }}" class="px-3">

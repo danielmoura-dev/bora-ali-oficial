@@ -12,6 +12,7 @@ use App\Http\Controllers\TicketTypeController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\Organizer\OrganizerDashboardController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Webhook Mercado Pago — sem CSRF
@@ -37,7 +38,14 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
 
     Route::get('/pedidos/{reference}/status', [OrderController::class, 'status'])->name('orders.status');
-    
+
+    // Perfil
+    Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/perfil/senha', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::patch('/perfil/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::delete('/perfil', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
     // Verificação de e-mail
     Route::get('/verify', [VerificationController::class, 'notice'])->name('auth.verify.notice');
     Route::post('/verify', [VerificationController::class, 'submit'])->name('auth.verify.submit');

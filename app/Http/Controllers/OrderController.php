@@ -109,7 +109,7 @@ class OrderController extends Controller
 
         return view('orders.my-tickets', compact('orders'));
     }
-
+    
     public function status(string $reference)
     {
         $order = Order::where('reference', $reference)
