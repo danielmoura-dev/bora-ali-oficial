@@ -26,11 +26,10 @@ class OrganizerDashboardController extends Controller
             ->where('status', 'paid')
             ->sum('platform_fee');
 
-        $totalTicketsSold = Order::whereIn('event_id', $eventIds)
-            ->where('status', 'paid')
-            ->withCount('items')
-            ->get()
-            ->sum('items_count');
+        $totalTicketsSold = \App\Models\TicketBatch::whereHas(
+            'ticketType',
+            fn($q) => $q->whereIn('event_id', $eventIds)
+        )->sum('quantity_sold');
 
         $pendingOrdersCount = Order::whereIn('event_id', $eventIds)
             ->where('status', 'pending')
@@ -39,11 +38,11 @@ class OrganizerDashboardController extends Controller
         // Eventos com resumo de vendas
         $events = Event::where('user_id', $userId)
             ->withCount([
-                'orders as paid_orders_count' => fn ($q) => $q->where('status', 'paid'),
-                'orders as pending_orders_count' => fn ($q) => $q->where('status', 'pending'),
+                'orders as paid_orders_count' => fn($q) => $q->where('status', 'paid'),
+                'orders as pending_orders_count' => fn($q) => $q->where('status', 'pending'),
             ])
             ->withSum(
-                ['orders as revenue' => fn ($q) => $q->where('status', 'paid')],
+                ['orders as revenue' => fn($q) => $q->where('status', 'paid')],
                 'total'
             )
             ->orderByDesc('created_at')
@@ -79,13 +78,13 @@ class OrganizerDashboardController extends Controller
             ->paginate(20);
 
         $stats = [
-            'total_revenue'  => Order::where('event_id', $event->id)
+            'total_revenue' => Order::where('event_id', $event->id)
                 ->where('status', 'paid')->sum('total'),
-            'total_sold'     => Order::where('event_id', $event->id)
+            'total_sold' => Order::where('event_id', $event->id)
                 ->where('status', 'paid')->count(),
-            'total_pending'  => Order::where('event_id', $event->id)
+            'total_pending' => Order::where('event_id', $event->id)
                 ->where('status', 'pending')->count(),
-            'platform_fees'  => Order::where('event_id', $event->id)
+            'platform_fees' => Order::where('event_id', $event->id)
                 ->where('status', 'paid')->sum('platform_fee'),
         ];
 
@@ -93,7 +92,7 @@ class OrganizerDashboardController extends Controller
         $salesByType = $event->ticketTypes()
             ->with(['batches'])
             ->withSum(
-                ['batches as total_sold' => fn ($q) => $q],
+                ['batches as total_sold' => fn($q) => $q],
                 'quantity_sold'
             )
             ->get();
