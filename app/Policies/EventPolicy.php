@@ -21,4 +21,5 @@ class EventPolicy
     {
         return $user->id === $event->user_id;
     }
+    
 }

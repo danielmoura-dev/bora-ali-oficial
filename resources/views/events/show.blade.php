@@ -27,16 +27,26 @@
                                            text-white text-sm rounded-lg transition">
                                     Publicar evento
                                 </button>
+                            </form>
+                        @endif
 
-
+                        @if(in_array($event->status, ['draft', 'published']))
+                            <form method="POST"
+                                  action="{{ route('events.cancel', $event->slug) }}"
+                                  onsubmit="return confirm('Cancelar o evento e notificar todos os compradores?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="px-4 py-2 border border-red-300 text-red-600
+                                               hover:bg-red-50 text-sm rounded-lg transition">
+                                    Cancelar evento
+                                </button>
                             </form>
                         @endif
                     </div>
                 </div>
             @endif
         @endauth
-
-
 
         @if (session('status'))
             <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700

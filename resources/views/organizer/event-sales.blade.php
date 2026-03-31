@@ -104,6 +104,20 @@
                                     {{ $order->reference }}
                                 </span>
                             </div>
+
+                            @if($order->status === 'paid')
+                                <form method="POST"
+                                      action="{{ route('orders.refund', $order->reference) }}"
+                                      onsubmit="return confirm('Reembolsar {{ $order->reference }}?')"
+                                      class="mt-1">
+                                    @csrf
+                                    <button type="submit"
+                                            class="text-xs text-red-500 hover:underline">
+                                        Reembolsar
+                                    </button>
+                                </form>
+                            @endif
+
                             <p class="text-sm text-gray-800">{{ $order->user->name }}</p>
                             <p class="text-xs text-gray-400">
                                 {{ $order->created_at->translatedFormat('d \d\e M \d\e Y · H:i') }}

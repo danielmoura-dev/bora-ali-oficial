@@ -15,6 +15,7 @@ use App\Http\Controllers\Organizer\OrganizerDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\OrganizerPublicController;
+use App\Http\Controllers\CancellationController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -26,7 +27,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Perfis públicos 
 Route::get('/organizadores/{username}', [OrganizerPublicController::class, 'showByUsername'])->name('organizer.public');
-Route::get('/organizadores/id/{id}',   [OrganizerPublicController::class, 'showById'])->name('organizer.public.id');
+Route::get('/organizadores/id/{id}', [OrganizerPublicController::class, 'showById'])->name('organizer.public.id');
 
 // Auth — visitantes
 Route::middleware('guest')->group(function () {
@@ -46,7 +47,7 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
     Route::get('/pedidos/{reference}/status', [OrderController::class, 'status'])->name('orders.status');
 
-    
+
     // Perfil
     Route::patch('/perfil/publico', [ProfileController::class, 'updatePublicProfile'])->name('profile.public.update');
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
@@ -85,6 +86,11 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/eventos', [EventController::class, 'store'])->name('events.store');
     Route::get('/eventos/meus', [EventController::class, 'my'])->name('events.my');
     Route::patch('/eventos/{slug}/publicar', [EventController::class, 'publish'])->name('events.publish');
+
+    // Cancelamento e reembolso
+    Route::delete('/pedidos/{reference}/cancelar', [CancellationController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::post('/pedidos/{reference}/reembolsar', [CancellationController::class, 'refundOrder'])->name('orders.refund');
+    Route::delete('/eventos/{slug}/cancelar', [CancellationController::class, 'cancelEvent'])->name('events.cancel');
 
     // Mercado Pago OAuth
     Route::get('/conectar/mercadopago', [MercadoPagoController::class, 'connect'])->name('mp.connect');

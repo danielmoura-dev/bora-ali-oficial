@@ -28,9 +28,26 @@
                                 · {{ $order->reference }}
                             </p>
                         </div>
-                        <span class="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                            Pago
-                        </span>
+
+                        <div class="text-right">
+                            <span class="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                                Pago
+                            </span>
+
+                            {{-- Cancelar pedido --}}
+                            @if($order->isPaid() && !$order->event->isFinished())
+                                <form method="POST"
+                                      action="{{ route('orders.cancel', $order->reference) }}"
+                                      onsubmit="return confirm('Tem certeza que deseja cancelar este pedido?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="text-xs text-red-500 hover:underline mt-1">
+                                        Cancelar pedido
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </div>
 
                     @foreach($order->items as $item)
