@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Mail\VerificationMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -130,5 +130,41 @@ class AuthRegisterTest extends TestCase
         $this->actingAs($user)
             ->post(route('auth.verify.submit'), ['code' => '123456'])
             ->assertSessionHasErrors('code');
+    }
+
+    #[Test]
+    public function registration_sends_verification_email(): void
+    {
+        Mail::fake();
+
+        $this->post(route('auth.register.store'), [
+            'name'                  => 'João Silva',
+            'email'                 => 'joao@exemplo.com',
+            'password'              => 'Senha@1234',
+            'password_confirmation' => 'Senha@1234',
+        ]);
+
+        Mail::assertSent(VerificationMail::class, function ($mail) {
+            return $mail->hasTo('joao@exemplo.com');
+        });
+    }
+
+    #[Test]
+    public function resend_verification_sends_email(): void
+    {
+        Mail::fake();
+
+        $user = User::create([
+            'name'     => 'João Silva',
+            'email'    => 'joao@exemplo.com',
+            'password' => bcrypt('Senha@1234'),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('auth.verify.resend'));
+
+        Mail::assertSent(VerificationMail::class, function ($mail) {
+            return $mail->hasTo('joao@exemplo.com');
+        });
     }
 }

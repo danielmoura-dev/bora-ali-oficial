@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Mail\VerificationMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Resend\Laravel\Facades\Resend;
+use Illuminate\Support\Facades\Mail;
 
 class AuthService
 {
@@ -32,17 +32,7 @@ class AuthService
             'verification_code_expires_at' => $expires,
         ])->save();
 
-        if (app()->environment('testing')) {
-            return;
-        }
-
-        // Em local, o código vai para storage/logs/laravel.log
-        // Em produção, trocar MAIL_MAILER=resend no .env
-        \Illuminate\Support\Facades\Log::info("=== CÓDIGO DE VERIFICAÇÃO ===", [
-            'usuario' => $user->email,
-            'codigo' => $code,
-            'expira' => $expires,
-        ]);
+        Mail::to($user->email)->send(new VerificationMail($user));
     }
 
     public function verifyCode(User $user, string $code): bool
