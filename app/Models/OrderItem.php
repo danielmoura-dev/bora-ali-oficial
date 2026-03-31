@@ -11,8 +11,13 @@ class OrderItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id', 'ticket_batch_id', 'ticket_type_id',
-        'quantity', 'unit_price', 'subtotal', 'ticket_code',
+        'order_id',
+        'ticket_batch_id',
+        'ticket_type_id',
+        'quantity',
+        'unit_price',
+        'subtotal',
+        'ticket_code',
     ];
 
     public function order()
@@ -37,5 +42,15 @@ class OrderItem extends Model
         } while (static::where('ticket_code', $code)->exists());
 
         return $code;
+    }
+
+    public function checkin()
+    {
+        return $this->hasOne(Checkin::class);
+    }
+
+    public function isCheckedIn(): bool
+    {
+        return $this->checkin()->exists();
     }
 }

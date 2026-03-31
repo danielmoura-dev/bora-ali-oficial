@@ -13,6 +13,7 @@ use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\Organizer\OrganizerDashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CheckinController;
 use Illuminate\Support\Facades\Route;
 
 // Webhook Mercado Pago — sem CSRF
@@ -86,6 +87,11 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     // Painel do organizador
     Route::get('/organizador', [OrganizerDashboardController::class, 'index'])->name('organizer.dashboard');
     Route::get('/organizador/eventos/{slug}/vendas', [OrganizerDashboardController::class, 'eventSales'])->name('organizer.event.sales');
+
+    // Check-in
+    Route::get('/checkin/{slug}', [CheckinController::class, 'index'])->name('checkin.index');
+    Route::post('/checkin/{slug}/scan', [CheckinController::class, 'scan'])->name('checkin.scan');
+    Route::get('/checkin/{slug}/stats', [CheckinController::class, 'stats'])->name('checkin.stats');
 
 });
 

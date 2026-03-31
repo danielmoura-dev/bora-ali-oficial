@@ -27,12 +27,17 @@
                                            text-white text-sm rounded-lg transition">
                                     Publicar evento
                                 </button>
+
+                                
                             </form>
+                            
                         @endif
                     </div>
                 </div>
             @endif
         @endauth
+
+        
 
         @if (session('status'))
             <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700
@@ -40,6 +45,14 @@
                 {{ session('status') }}
             </div>
         @endif
+
+        @if ($event->isPublished())
+                                    <a href="{{ route('checkin.index', $event->slug) }}"
+                                        class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white
+              text-sm font-medium rounded-lg transition">
+                                        📷 Check-in
+                                    </a>
+                                @endif
 
         {{-- Capa --}}
         <div
