@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Auth;
 
 class MercadoPagoController extends Controller
 {
-    public function __construct(private MercadoPagoOAuthService $oauthService) {}
+    public function __construct(private MercadoPagoOAuthService $oauthService)
+    {
+    }
 
     public function connect(Request $request)
     {
         $state = csrf_token();
-        $url   = $this->oauthService->getAuthorizationUrl($state);
+        $url = $this->oauthService->getAuthorizationUrl($state);
 
         return redirect($url);
     }
@@ -23,14 +25,14 @@ class MercadoPagoController extends Controller
         $code = $request->input('code');
 
         if (!$code) {
-            return redirect()->route('profile.edit')
+            return redirect()->route('events.my')
                 ->withErrors(['mp' => 'Autorização negada pelo Mercado Pago.']);
         }
 
         $tokens = $this->oauthService->exchangeCodeForTokens($code);
 
         if (!$tokens) {
-            return redirect()->route('profile.edit')
+            return redirect()->route('events.my')
                 ->withErrors(['mp' => 'Erro ao conectar com o Mercado Pago.']);
         }
 
@@ -48,7 +50,7 @@ class MercadoPagoController extends Controller
     {
         $this->oauthService->disconnect(Auth::user());
 
-        return redirect()->route('profile.edit')
+        return redirect()->route('events.my')
             ->with('status', 'Mercado Pago desconectado.');
     }
 }
