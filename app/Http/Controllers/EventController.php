@@ -59,6 +59,10 @@ class EventController extends Controller
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'is_free' => ['sometimes', 'boolean'],
             'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'payment_provider' => ['required', 'in:mercadopago,pagarme'],
+            'payment_mode' => ['required', 'in:split,direct'],
+            'payment_methods' => ['required', 'array', 'min:1'],
+            'payment_methods.*' => ['in:pix,credit_card'],
         ]);
 
         $coverPath = null;
@@ -81,6 +85,9 @@ class EventController extends Controller
             'is_free' => $request->boolean('is_free'),
             'cover_image' => $coverPath,
             'status' => 'draft',
+            'payment_provider' => $validated['payment_provider'],
+            'payment_mode' => $validated['payment_mode'],
+            'payment_methods' => $validated['payment_methods'],
         ]);
 
         return redirect()->route('events.show', $event->slug)

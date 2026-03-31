@@ -22,22 +22,22 @@ class PaymentTest extends TestCase
         $owner = User::factory()->create();
         $event = Event::factory()->create([
             'user_id' => $owner->id,
-            'status'  => 'published',
+            'status' => 'published',
         ]);
-        $type  = TicketType::factory()->create(['event_id' => $event->id]);
+        $type = TicketType::factory()->create(['event_id' => $event->id]);
         $batch = TicketBatch::factory()->create([
             'ticket_type_id' => $type->id,
-            'price'          => 5000,
-            'quantity'       => 100,
+            'price' => 5000,
+            'quantity' => 100,
         ]);
         $buyer = User::factory()->create();
         $order = Order::factory()->create([
-            'user_id'      => $buyer->id,
-            'event_id'     => $event->id,
-            'subtotal'     => 5000,
+            'user_id' => $buyer->id,
+            'event_id' => $event->id,
+            'subtotal' => 5000,
             'platform_fee' => 100,
-            'total'        => 5100,
-            'status'       => 'pending',
+            'total' => 5100,
+            'status' => 'pending',
         ]);
 
         return compact('buyer', 'owner', 'event', 'order', 'batch');
@@ -59,17 +59,20 @@ class PaymentTest extends TestCase
     {
         ['buyer' => $buyer, 'order' => $order] = $this->makeOrder();
 
-        $paymentService = Mockery::mock(PaymentService::class);
-        $paymentService->shouldReceive('processPixPayment')
+        $mockProvider = Mockery::mock(\App\Payment\Contracts\PaymentProviderInterface::class);
+        $mockProvider->shouldReceive('processPixPayment')
             ->once()
             ->andReturn([
-                'status'          => 'pending_pix',
-                'payment_id'      => 'mp_mock_123',
-                'pix_qrcode'      => 'base64encodedimage',
-                'pix_copy_paste'  => '00020126580014br.gov.bcb.pix0136abc123',
+                'status' => 'pending_pix',
+                'payment_id' => 'mp_mock_123',
+                'pix_qrcode' => 'base64encodedimage',
+                'pix_copy_paste' => '00020126580014br.gov.bcb.pix',
             ]);
 
-        $this->app->instance(PaymentService::class, $paymentService);
+        $mockManager = Mockery::mock(\App\Payment\PaymentManager::class);
+        $mockManager->shouldReceive('for')->once()->andReturn($mockProvider);
+
+        $this->app->instance(\App\Payment\PaymentManager::class, $mockManager);
 
         $this->actingAs($buyer)
             ->post(route('orders.pay', $order->reference), [
@@ -86,15 +89,15 @@ class PaymentTest extends TestCase
 
         $order->forceFill([
             'payment_method' => 'pix',
-            'payment_id'     => 'mp_mock_123',
+            'payment_id' => 'mp_mock_123',
         ])->save();
 
         $payload = json_encode([
             'action' => 'payment.updated',
-            'data'   => ['id' => 'mp_mock_123'],
+            'data' => ['id' => 'mp_mock_123'],
         ]);
 
-        $secret    = config('services.mercadopago.webhook_secret', 'test_secret');
+        $secret = config('services.mercadopago.webhook_secret', 'test_secret');
         $signature = hash_hmac('sha256', $payload, $secret);
 
         $this->postJson(
@@ -109,15 +112,18 @@ class PaymentTest extends TestCase
     {
         ['buyer' => $buyer, 'order' => $order] = $this->makeOrder();
 
-        $paymentService = Mockery::mock(PaymentService::class);
-        $paymentService->shouldReceive('processPixPayment')
+        $mockProvider = Mockery::mock(\App\Payment\Contracts\PaymentProviderInterface::class);
+        $mockProvider->shouldReceive('processPixPayment')
             ->once()
             ->andReturn([
-                'status'  => 'failed',
+                'status' => 'failed',
                 'message' => 'Erro ao gerar Pix.',
             ]);
 
-        $this->app->instance(PaymentService::class, $paymentService);
+        $mockManager = Mockery::mock(\App\Payment\PaymentManager::class);
+        $mockManager->shouldReceive('for')->once()->andReturn($mockProvider);
+
+        $this->app->instance(\App\Payment\PaymentManager::class, $mockManager);
 
         $this->actingAs($buyer)
             ->post(route('orders.pay', $order->reference), [
@@ -127,6 +133,7 @@ class PaymentTest extends TestCase
 
         $this->assertEquals('pending', $order->fresh()->status);
     }
+
 
     #[Test]
     public function success_page_shows_ticket_codes(): void

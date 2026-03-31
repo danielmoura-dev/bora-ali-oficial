@@ -25,6 +25,17 @@ class Event extends Model
         'ends_at',
         'status',
         'is_free',
+        'payment_provider',
+        'payment_mode',
+        'payment_methods',
+    ];
+
+    protected $attributes = [
+        'status' => 'draft',
+        'is_free' => false,
+        'payment_provider' => 'mercadopago',
+        'payment_mode' => 'direct',
+        'payment_methods' => '["pix"]',
     ];
 
     protected function casts(): array
@@ -33,6 +44,7 @@ class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_free' => 'boolean',
+            'payment_methods' => 'array',
         ];
     }
 
@@ -113,5 +125,26 @@ class Event extends Model
     {
         return $this->starts_at->isFuture()
             || ($this->starts_at->isPast() && $this->ends_at->isFuture());
+    }
+
+    public function usesSplit(): bool
+    {
+        return $this->payment_mode === 'split';
+    }
+
+    public function usesDirect(): bool
+    {
+        return $this->payment_mode === 'direct';
+    }
+
+    public function acceptsPix(): bool
+    {
+        return in_array('pix', $this->payment_methods ?? []);
+    }
+
+    public function requiresMpConnect(): bool
+    {
+        return $this->payment_provider === 'mercadopago'
+            && $this->payment_mode === 'split';
     }
 }

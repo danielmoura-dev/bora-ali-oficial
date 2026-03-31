@@ -22,15 +22,18 @@ class EventCreateTest extends TestCase
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
-            'title'         => 'Festival de Verão',
-            'description'   => str_repeat('Descrição incrível do evento. ', 5),
-            'venue_name'    => 'Arena Castelão',
+            'title' => 'Festival de Verão',
+            'description' => str_repeat('Descrição incrível do evento. ', 5),
+            'venue_name' => 'Arena Castelão',
             'venue_address' => 'Av. Alberto Craveiro, 2901',
-            'city'          => 'Fortaleza',
-            'state'         => 'CE',
-            'starts_at'     => now()->addDays(10)->format('Y-m-d\TH:i'),
-            'ends_at'       => now()->addDays(10)->addHours(6)->format('Y-m-d\TH:i'),
-            'is_free'       => false,
+            'city' => 'Fortaleza',
+            'state' => 'CE',
+            'starts_at' => now()->addDays(10)->format('Y-m-d\TH:i'),
+            'ends_at' => now()->addDays(10)->addHours(6)->format('Y-m-d\TH:i'),
+            'is_free' => false,
+            'payment_provider' => 'mercadopago',
+            'payment_mode' => 'direct',
+            'payment_methods' => ['pix'],
         ], $overrides);
     }
 
@@ -105,7 +108,7 @@ class EventCreateTest extends TestCase
         $this->actingAs($this->makeUser())
             ->post(route('events.store'), $this->validPayload([
                 'starts_at' => now()->addDays(10)->format('Y-m-d\TH:i'),
-                'ends_at'   => now()->addDays(9)->format('Y-m-d\TH:i'),
+                'ends_at' => now()->addDays(9)->format('Y-m-d\TH:i'),
             ]))
             ->assertSessionHasErrors('ends_at');
     }
@@ -140,10 +143,10 @@ class EventCreateTest extends TestCase
     #[Test]
     public function user_can_publish_their_own_event(): void
     {
-        $user  = $this->makeUser();
+        $user = $this->makeUser();
         $event = Event::factory()->create([
             'user_id' => $user->id,
-            'status'  => 'draft',
+            'status' => 'draft',
         ]);
 
         $this->actingAs($user)
@@ -161,7 +164,7 @@ class EventCreateTest extends TestCase
 
         $event = Event::factory()->create([
             'user_id' => $owner->id,
-            'status'  => 'draft',
+            'status' => 'draft',
         ]);
 
         $this->actingAs($other)

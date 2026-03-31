@@ -4,31 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Order;
+use App\Payment\PaymentManager;
 use App\Services\OrderService;
-use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     public function __construct(
-        private OrderService $orderService,
-        private PaymentService $paymentService,
-    ) {
-    }
+        private OrderService   $orderService,
+        private PaymentManager $paymentManager,
+    ) {}
 
     public function store(Request $request, string $slug)
     {
         $event = Event::where('slug', $slug)->firstOrFail();
 
         $request->validate([
-            'items' => ['required', 'array', 'min:1'],
+            'items'            => ['required', 'array', 'min:1'],
             'items.*.batch_id' => ['required', 'integer', 'exists:ticket_batches,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:10'],
         ]);
 
         $items = collect($request->input('items'))
-            ->filter(fn($i) => (int) ($i['quantity'] ?? 0) > 0)
+            ->filter(fn ($i) => (int)($i['quantity'] ?? 0) > 0)
             ->values()
             ->toArray();
 
@@ -37,9 +36,9 @@ class OrderController extends Controller
         }
 
         $order = $this->orderService->createOrder(
-            userId: Auth::id(),
+            userId:  Auth::id(),
             eventId: $event->id,
-            items: $items,
+            items:   $items,
         );
 
         return redirect()->route('orders.checkout', $order->reference);
@@ -65,19 +64,21 @@ class OrderController extends Controller
     {
         $order = Order::where('reference', $reference)
             ->where('user_id', Auth::id())
-            ->with(['user', 'event', 'items'])
+            ->with(['user', 'event.organizer', 'items'])
             ->firstOrFail();
 
         $request->validate([
             'payment_method' => ['required', 'in:pix'],
         ]);
 
-        $result = $this->paymentService->processPixPayment($order);
+        // Seleciona o provider correto baseado na configuração do evento
+        $provider = $this->paymentManager->for($order->event);
+        $result   = $provider->processPixPayment($order);
 
         if ($result['status'] === 'pending_pix') {
             $order->forceFill([
-                'payment_id' => $result['payment_id'],
-                'payment_method' => 'pix',
+                'payment_id'       => $result['payment_id'],
+                'payment_method'   => 'pix',
                 'payment_metadata' => $result,
             ])->save();
 
@@ -109,7 +110,7 @@ class OrderController extends Controller
 
         return view('orders.my-tickets', compact('orders'));
     }
-    
+
     public function status(string $reference)
     {
         $order = Order::where('reference', $reference)
@@ -118,7 +119,7 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => $order->status,
-            'paid' => $order->isPaid(),
+            'paid'   => $order->isPaid(),
         ]);
     }
 }

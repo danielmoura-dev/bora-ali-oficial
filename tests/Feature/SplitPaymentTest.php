@@ -21,33 +21,33 @@ class SplitPaymentTest extends TestCase
     private function makeOrderWithConnectedOrganizer(int $quantity = 1): array
     {
         $organizer = User::factory()->create([
-            'mp_access_token'    => 'TEST-organizer-token',
-            'mp_user_id'         => '123456789',
-            'mp_token_expires_at'=> now()->addDays(30),
+            'mp_access_token' => 'TEST-organizer-token',
+            'mp_user_id' => '123456789',
+            'mp_token_expires_at' => now()->addDays(30),
         ]);
 
         $event = Event::factory()->create([
             'user_id' => $organizer->id,
-            'status'  => 'published',
+            'status' => 'published',
         ]);
 
-        $type  = TicketType::factory()->create(['event_id' => $event->id]);
+        $type = TicketType::factory()->create(['event_id' => $event->id]);
         $batch = TicketBatch::factory()->create([
             'ticket_type_id' => $type->id,
-            'price'          => 5000, // R$ 50,00
-            'quantity'       => 100,
+            'price' => 5000, // R$ 50,00
+            'quantity' => 100,
         ]);
 
         $buyer = User::factory()->create();
         $platformFee = 100 * $quantity; // R$ 1,00 por ingresso
 
         $order = Order::factory()->create([
-            'user_id'      => $buyer->id,
-            'event_id'     => $event->id,
-            'subtotal'     => 5000 * $quantity,
+            'user_id' => $buyer->id,
+            'event_id' => $event->id,
+            'subtotal' => 5000 * $quantity,
             'platform_fee' => $platformFee,
-            'total'        => (5000 * $quantity) + $platformFee,
-            'status'       => 'pending',
+            'total' => (5000 * $quantity) + $platformFee,
+            'status' => 'pending',
         ]);
 
         return compact('organizer', 'buyer', 'event', 'order', 'batch');
@@ -71,17 +71,20 @@ class SplitPaymentTest extends TestCase
     {
         ['buyer' => $buyer, 'order' => $order] = $this->makeOrderWithConnectedOrganizer();
 
-        $paymentService = Mockery::mock(PaymentService::class);
-        $paymentService->shouldReceive('processPixPayment')
+        $mockProvider = Mockery::mock(\App\Payment\Contracts\PaymentProviderInterface::class);
+        $mockProvider->shouldReceive('processPixPayment')
             ->once()
             ->andReturn([
-                'status'         => 'pending_pix',
-                'payment_id'     => 'mp_split_123',
-                'pix_qrcode'     => 'base64img',
+                'status' => 'pending_pix',
+                'payment_id' => 'mp_split_123',
+                'pix_qrcode' => 'base64img',
                 'pix_copy_paste' => '00020126...',
             ]);
 
-        $this->app->instance(PaymentService::class, $paymentService);
+        $mockManager = Mockery::mock(\App\Payment\PaymentManager::class);
+        $mockManager->shouldReceive('for')->once()->andReturn($mockProvider);
+
+        $this->app->instance(\App\Payment\PaymentManager::class, $mockManager);
 
         $this->actingAs($buyer)
             ->post(route('orders.pay', $order->reference), [
@@ -94,36 +97,38 @@ class SplitPaymentTest extends TestCase
     #[Test]
     public function pix_payment_works_without_connected_organizer(): void
     {
-        $organizer = User::factory()->create([
-            'mp_access_token' => null,
-        ]);
-
+        $organizer = User::factory()->create(['mp_access_token' => null]);
         $event = Event::factory()->create([
             'user_id' => $organizer->id,
-            'status'  => 'published',
+            'status' => 'published',
+            'payment_provider' => 'mercadopago',
+            'payment_mode' => 'direct',
+            'payment_methods' => ['pix'],
         ]);
-
         $buyer = User::factory()->create();
         $order = Order::factory()->create([
-            'user_id'      => $buyer->id,
-            'event_id'     => $event->id,
-            'subtotal'     => 5000,
+            'user_id' => $buyer->id,
+            'event_id' => $event->id,
+            'subtotal' => 5000,
             'platform_fee' => 100,
-            'total'        => 5100,
-            'status'       => 'pending',
+            'total' => 5100,
+            'status' => 'pending',
         ]);
 
-        $paymentService = Mockery::mock(PaymentService::class);
-        $paymentService->shouldReceive('processPixPayment')
+        $mockProvider = Mockery::mock(\App\Payment\Contracts\PaymentProviderInterface::class);
+        $mockProvider->shouldReceive('processPixPayment')
             ->once()
             ->andReturn([
-                'status'         => 'pending_pix',
-                'payment_id'     => 'mp_nosplit_123',
-                'pix_qrcode'     => 'base64img',
+                'status' => 'pending_pix',
+                'payment_id' => 'mp_nosplit_123',
+                'pix_qrcode' => 'base64img',
                 'pix_copy_paste' => '00020126...',
             ]);
 
-        $this->app->instance(PaymentService::class, $paymentService);
+        $mockManager = Mockery::mock(\App\Payment\PaymentManager::class);
+        $mockManager->shouldReceive('for')->once()->andReturn($mockProvider);
+
+        $this->app->instance(\App\Payment\PaymentManager::class, $mockManager);
 
         $this->actingAs($buyer)
             ->post(route('orders.pay', $order->reference), [
@@ -145,9 +150,12 @@ class SplitPaymentTest extends TestCase
     public function organizer_without_mp_sees_connect_warning_on_event(): void
     {
         $organizer = User::factory()->create(['mp_access_token' => null]);
-        $event     = Event::factory()->create([
+        $event = Event::factory()->create([
             'user_id' => $organizer->id,
-            'status'  => 'draft',
+            'status' => 'draft',
+            'payment_mode' => 'split',      // ← adicione
+            'payment_provider' => 'mercadopago',// ← adicione
+            'payment_methods' => ['pix'],      // ← adicione
         ]);
 
         $this->actingAs($organizer)
@@ -159,14 +167,17 @@ class SplitPaymentTest extends TestCase
     public function organizer_with_mp_connected_sees_connected_status(): void
     {
         $organizer = User::factory()->create([
-            'mp_access_token'    => 'TEST-token',
-            'mp_user_id'         => '123',
-            'mp_token_expires_at'=> now()->addDays(30),
+            'mp_access_token' => 'TEST-token',
+            'mp_user_id' => '123',
+            'mp_token_expires_at' => now()->addDays(30),
         ]);
 
         $event = Event::factory()->create([
             'user_id' => $organizer->id,
-            'status'  => 'draft',
+            'status' => 'draft',
+            'payment_mode' => 'split',      // ← adicione
+            'payment_provider' => 'mercadopago',// ← adicione
+            'payment_methods' => ['pix'],      // ← adicione
         ]);
 
         $this->actingAs($organizer)
