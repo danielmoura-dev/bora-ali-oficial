@@ -16,8 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'onboarding' => EnsureOnboardingComplete::class,
         ]);
 
-        // Informa ao middleware Auth qual é a rota de login do projeto
         $middleware->redirectGuestsTo(fn() => route('auth.login'));
+
+        // Exclui webhook do CSRF
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

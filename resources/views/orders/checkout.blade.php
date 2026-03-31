@@ -5,16 +5,22 @@
 <div class="max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">Finalizar pedido</h1>
 
+    @if($errors->has('payment'))
+        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+            {{ $errors->first('payment') }}
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 sm:grid-cols-5 gap-6">
 
         {{-- Resumo --}}
-        <div class="sm:col-span-3 space-y-4">
+        <div class="sm:col-span-3">
             <div class="bg-white rounded-2xl border border-gray-100 p-5">
                 <h2 class="font-semibold text-gray-700 mb-4">Resumo do pedido</h2>
 
-                <div class="text-sm font-medium text-gray-800 mb-3">
+                <p class="text-sm font-medium text-gray-800 mb-3">
                     🎉 {{ $order->event->title }}
-                </div>
+                </p>
 
                 @foreach($order->items as $item)
                     <div class="flex justify-between text-sm py-2 border-t border-gray-50">
@@ -49,38 +55,38 @@
         {{-- Pagamento --}}
         <div class="sm:col-span-2">
             <div class="bg-white rounded-2xl border border-gray-100 p-5">
-                <h2 class="font-semibold text-gray-700 mb-4">Forma de pagamento</h2>
+                <h2 class="font-semibold text-gray-700 mb-4">Pagamento</h2>
 
                 <form method="POST" action="{{ route('orders.pay', $order->reference) }}"
-                      class="space-y-3">
+                      class="space-y-4">
                     @csrf
+                    <input type="hidden" name="payment_method" value="pix">
 
-                    @foreach(['credit_card' => '💳 Cartão de crédito', 'pix' => '⚡ Pix', 'boleto' => '🧾 Boleto'] as $value => $label)
-                        <label class="flex items-center gap-3 p-3 border-2 border-gray-100
-                                      rounded-xl cursor-pointer hover:border-indigo-300
-                                      has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50
-                                      transition">
-                            <input type="radio" name="payment_method" value="{{ $value }}"
-                                   class="text-indigo-600"
-                                   {{ $value === 'credit_card' ? 'checked' : '' }}>
-                            <span class="text-sm font-medium text-gray-700">{{ $label }}</span>
-                        </label>
-                    @endforeach
+                    {{-- Pix info --}}
+                    <div class="p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-lg">⚡</span>
+                            <span class="font-semibold text-green-800 text-sm">Pagar com Pix</span>
+                        </div>
+                        <p class="text-xs text-green-700">
+                            QR Code gerado na próxima tela. Pagamento confirmado em segundos.
+                        </p>
+                    </div>
 
-                    @error('payment_method')
-                        <p class="text-red-500 text-xs">{{ $message }}</p>
-                    @enderror
-
-                    <div class="pt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-                        <p class="text-xs text-yellow-700 text-center">
-                            🚧 Ambiente de testes — nenhum pagamento real será processado
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-gray-800">
+                            {{ $order->formattedTotal() }}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            inclui R$ {{ number_format($order->platform_fee / 100, 2, ',', '.') }}
+                            de taxa da plataforma
                         </p>
                     </div>
 
                     <button type="submit"
                             class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white
-                                   font-semibold rounded-xl transition text-sm mt-2">
-                        Confirmar pagamento
+                                   font-semibold rounded-xl transition text-sm">
+                        Gerar QR Code Pix
                     </button>
                 </form>
             </div>

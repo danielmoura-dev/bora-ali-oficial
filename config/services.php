@@ -38,6 +38,13 @@ return [
     'api_url' => env('WHATSAPP_API_URL'),
     'api_key'  => env('WHATSAPP_API_KEY'),
     ],
+
+    'mercadopago' => [
+    'access_token'   => env('MP_ACCESS_TOKEN'),
+    'public_key'     => env('MP_PUBLIC_KEY'),
+    'webhook_secret' => env('MP_WEBHOOK_SECRET'),
+    'sandbox'        => env('MP_SANDBOX', true),
+    ],
     
     'slack' => [
         'notifications' => [

@@ -9,7 +9,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Onboarding\OnboardingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TicketTypeController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
+
+// Webhook Mercado Pago — sem CSRF
+Route::post('/webhooks/mercadopago', [WebhookController::class, 'mercadopago'])->name('webhooks.mercadopago');
 
 // Página inicial (pública)
 Route::get('/', [HomeController::class, 'index'])->name('home');
