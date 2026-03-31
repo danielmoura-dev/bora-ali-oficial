@@ -1,66 +1,223 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bora Ali 🎉
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Plataforma SaaS de gestão de eventos regionais. Permite que organizadores criem eventos, vendam ingressos e façam check-in, com taxa fixa de **R$ 1,00 por transação** para a plataforma.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack Técnica
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Camada | Tecnologia |
+|---|---|
+| Framework | Laravel 11 (PHP 8.2+) |
+| Banco de dados | MySQL |
+| Frontend | Tailwind CSS + JavaScript via Vite |
+| Autenticação | Customizada (sem Breeze/Jetstream) + Google OAuth via Socialite |
+| E-mail | Resend API |
+| Pagamentos | Mercado Pago (Pix) — preparado para migrar para Pagar.me |
+| Testes | PHPUnit / Pest |
+| Ambiente local | Laragon + ngrok |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Pré-requisitos
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.2+
+- Composer
+- Node.js 18+
+- MySQL
+- Laragon (Windows) ou equivalente
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Instalação local
 
-## Laravel Sponsors
+### 1. Clone o repositório
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone https://github.com/SEU_USUARIO/bora-ali.git
+cd bora-ali
+```
 
-### Premium Partners
+### 2. Instale as dependências
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+composer install
+npm install
+```
 
-## Contributing
+### 3. Configure o ambiente
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+Edite o `.env` com suas credenciais:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```env
+APP_NAME="Bora Ali"
+APP_URL=http://bora-ali.test
 
-## Security Vulnerabilities
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bora_ali
+DB_USERNAME=root
+DB_PASSWORD=
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Resend (e-mail)
+RESEND_API_KEY=re_sua_chave
 
-## License
+# Google OAuth
+GOOGLE_CLIENT_ID=seu_client_id
+GOOGLE_CLIENT_SECRET=seu_client_secret
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Mercado Pago
+MP_ACCESS_TOKEN=TEST-seu_token
+MP_PUBLIC_KEY=TEST-sua_public_key
+MP_CLIENT_ID=seu_client_id
+MP_CLIENT_SECRET=seu_client_secret
+MP_WEBHOOK_SECRET=seu_webhook_secret
+MP_SANDBOX=true
+```
+
+### 4. Configure o banco de dados
+
+```bash
+mysql -u root -e "CREATE DATABASE bora_ali CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -e "CREATE DATABASE bora_ali_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+php artisan migrate
+```
+
+### 5. Configure o banco de testes
+
+No `phpunit.xml`, confirme:
+
+```xml
+<env name="DB_DATABASE" value="bora_ali_testing"/>
+<env name="DB_USERNAME" value="root"/>
+<env name="DB_PASSWORD" value=""/>
+```
+
+### 6. Compile os assets
+
+```bash
+# Desenvolvimento (com HMR)
+npm run dev
+
+# Produção
+npm run build
+```
+
+### 7. Suba o servidor
+
+```bash
+php artisan serve
+```
+
+Acesse: `http://bora-ali.test` ou `http://localhost:8000`
+
+---
+
+## Rodando os testes
+
+```bash
+# Suite completa
+php artisan test
+
+# Módulo específico
+php artisan test tests/Feature/AuthRegisterTest.php
+```
+
+---
+
+## Configuração do ngrok (webhooks)
+
+Para receber webhooks do Mercado Pago em desenvolvimento:
+
+```bash
+ngrok http 80
+```
+
+Registre a URL gerada no dashboard do Mercado Pago:
+`https://SEU_HASH.ngrok.io/webhooks/mercadopago`
+
+---
+
+## Estrutura de diretórios relevante
+
+```
+app/
+├── Console/Commands/       # SendEventReminders
+├── Http/Controllers/
+│   ├── Auth/               # Register, Login, Google, Verification
+│   ├── Onboarding/         # OnboardingController (steps 2 e 3)
+│   ├── Organizer/          # OrganizerDashboardController
+│   └── ...                 # Event, Order, Checkin, Profile, etc.
+├── Mail/                   # OrderConfirmedMail, EventReminderMail, OrderCancelledMail
+├── Models/                 # User, Event, Order, OrderItem, TicketType, TicketBatch, Checkin
+├── Policies/               # EventPolicy, OrderPolicy
+├── Rules/                  # ValidCpf, ValidCnpj
+└── Services/               # AuthService, WhatsAppService, OrderService,
+                            # PaymentService, CancellationService,
+                            # MercadoPagoOAuthService, CheckinService
+
+database/
+├── factories/              # UserFactory, EventFactory, OrderFactory, etc.
+└── migrations/             # Todas as migrations em ordem cronológica
+
+resources/views/
+├── auth/                   # login, register, verify
+├── checkin/                # index (scanner QR)
+├── emails/                 # order-confirmed, event-reminder, order-cancelled
+├── events/                 # create, show, my
+├── layouts/                # app.blade.php, auth.blade.php
+├── onboarding/             # step2, step3, step3-verify
+├── orders/                 # checkout, pending, success, my-tickets
+├── organizer/              # dashboard, event-sales, public
+├── partials/               # event-card
+└── profile/                # show
+
+routes/
+└── web.php                 # Todas as rotas agrupadas por contexto
+```
+
+---
+
+## Variáveis de ambiente — referência completa
+
+| Variável | Descrição |
+|---|---|
+| `APP_KEY` | Chave de criptografia do Laravel |
+| `APP_URL` | URL base da aplicação |
+| `DB_*` | Configurações do banco MySQL |
+| `RESEND_API_KEY` | Chave da API do Resend para envio de e-mails |
+| `GOOGLE_CLIENT_ID` | Client ID do Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Secret do Google OAuth |
+| `MP_ACCESS_TOKEN` | Access token do Mercado Pago (plataforma) |
+| `MP_PUBLIC_KEY` | Public key do Mercado Pago (frontend) |
+| `MP_CLIENT_ID` | Client ID para OAuth do organizador |
+| `MP_CLIENT_SECRET` | Client Secret para OAuth do organizador |
+| `MP_WEBHOOK_SECRET` | Secret para validar webhooks do MP |
+| `MP_SANDBOX` | `true` em dev, `false` em produção |
+| `WHATSAPP_API_URL` | URL da API de WhatsApp (CallMeBot ou similar) |
+| `WHATSAPP_API_KEY` | Chave da API de WhatsApp |
+
+---
+
+## Cron job (produção)
+
+Adicione ao crontab do servidor:
+
+```bash
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+O comando `events:send-reminders` roda diariamente às 09h e envia lembretes para compradores de eventos que começam no dia seguinte.
+
+---
+
+## Licença
+
+Projeto privado — todos os direitos reservados.
