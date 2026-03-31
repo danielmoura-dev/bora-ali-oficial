@@ -28,16 +28,15 @@
                                     Publicar evento
                                 </button>
 
-                                
+
                             </form>
-                            
                         @endif
                     </div>
                 </div>
             @endif
         @endauth
 
-        
+
 
         @if (session('status'))
             <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700
@@ -47,12 +46,12 @@
         @endif
 
         @if ($event->isPublished())
-                                    <a href="{{ route('checkin.index', $event->slug) }}"
-                                        class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white
+            <a href="{{ route('checkin.index', $event->slug) }}"
+                class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white
               text-sm font-medium rounded-lg transition">
-                                        📷 Check-in
-                                    </a>
-                                @endif
+                📷 Check-in
+            </a>
+        @endif
 
         {{-- Capa --}}
         <div
@@ -119,7 +118,29 @@
                 {{-- Organizador --}}
                 <div class="bg-white rounded-2xl border border-gray-100 p-4">
                     <h3 class="font-semibold text-gray-800 text-sm mb-3">👤 Organizador</h3>
-                    <p class="text-gray-700 text-sm">{{ $event->organizer->name }}</p>
+                    <div class="flex items-center gap-3">
+                        @if ($event->organizer->avatar)
+                            <img src="{{ str_starts_with($event->organizer->avatar, 'http')
+                                ? $event->organizer->avatar
+                                : Storage::url($event->organizer->avatar) }}"
+                                class="w-9 h-9 rounded-full object-cover">
+                        @else
+                            <div
+                                class="w-9 h-9 rounded-full bg-indigo-100 flex items-center
+                        justify-center text-indigo-600 font-bold text-sm">
+                                {{ strtoupper(substr($event->organizer->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">{{ $event->organizer->name }}</p>
+                            @if ($event->organizer->username)
+                                <a href="{{ route('organizer.public', $event->organizer->username) }}"
+                                    class="text-xs text-indigo-600 hover:underline">
+                                    Ver perfil →
+                                </a>
+                            @endif
+                        </div>
+                    </div>
                 </div>
 
                 {{-- CTA Ingresso --}}
@@ -247,7 +268,8 @@
                         <summary class="text-sm text-indigo-600 cursor-pointer hover:underline font-medium">
                             + Novo tipo de ingresso
                         </summary>
-                        <form method="POST" action="{{ route('tickets.types.store', $event->slug) }}" class="mt-4 space-y-3">
+                        <form method="POST" action="{{ route('tickets.types.store', $event->slug) }}"
+                            class="mt-4 space-y-3">
                             @csrf
                             <input type="text" name="name" placeholder="Nome (ex: Inteira, VIP, Meia)"
                                 class="w-full px-4 py-2 text-sm border border-gray-200 rounded-xl">

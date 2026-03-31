@@ -14,6 +14,8 @@ use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\Organizer\OrganizerDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\OrganizerPublicController;
+
 use Illuminate\Support\Facades\Route;
 
 // Webhook Mercado Pago — sem CSRF
@@ -21,6 +23,10 @@ Route::post('/webhooks/mercadopago', [WebhookController::class, 'mercadopago'])-
 
 // Página inicial (pública)
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Perfis públicos 
+Route::get('/organizadores/{username}', [OrganizerPublicController::class, 'showByUsername'])->name('organizer.public');
+Route::get('/organizadores/id/{id}',   [OrganizerPublicController::class, 'showById'])->name('organizer.public.id');
 
 // Auth — visitantes
 Route::middleware('guest')->group(function () {
@@ -40,7 +46,9 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
     Route::get('/pedidos/{reference}/status', [OrderController::class, 'status'])->name('orders.status');
 
+    
     // Perfil
+    Route::patch('/perfil/publico', [ProfileController::class, 'updatePublicProfile'])->name('profile.public.update');
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/perfil/senha', [ProfileController::class, 'updatePassword'])->name('profile.password');

@@ -21,9 +21,11 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required', 'email', 'max:255',
+                'required',
+                'email',
+                'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
         ]);
@@ -69,7 +71,30 @@ class ProfileController extends Controller
         return redirect()->route('profile.show')
             ->with('status', 'Senha atualizada com sucesso.');
     }
+    public function updatePublicProfile(Request $request)
+    {
+        $user = Auth::user();
 
+        $validated = $request->validate([
+            'username' => [
+                'nullable',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[a-zA-Z0-9_]+$/',
+                \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
+            ],
+            'bio' => ['nullable', 'string', 'max:300'],
+            'website' => ['nullable', 'url', 'max:255'],
+            'instagram' => ['nullable', 'string', 'max:100'],
+            'whatsapp' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $user->forceFill($validated)->save();
+
+        return redirect()->route('profile.show')
+            ->with('status', 'Perfil público atualizado.');
+    }
     public function updateAvatar(Request $request)
     {
         $request->validate([

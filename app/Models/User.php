@@ -31,6 +31,11 @@ class User extends Authenticatable
         'mp_refresh_token',
         'mp_user_id',
         'mp_token_expires_at',
+        'username',
+        'bio',
+        'website',
+        'instagram',
+        'whatsapp',
     ];
 
     protected $hidden = [
@@ -98,5 +103,14 @@ class User extends Authenticatable
         }
 
         return $this->mp_token_expires_at->isFuture();
+    }
+
+    public function getProfileUrlAttribute(): string
+    {
+        if ($this->username) {
+            return route('organizer.public', $this->username);
+        }
+
+        return route('organizer.public.id', $this->id);
     }
 }
