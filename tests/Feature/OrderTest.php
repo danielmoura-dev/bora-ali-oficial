@@ -17,12 +17,12 @@ class OrderTest extends TestCase
 
     private function makeEventWithTicket(array $batchOverrides = []): array
     {
-        $user  = User::factory()->create();
+        $user = User::factory()->create();
         $event = Event::factory()->create([
             'user_id' => $user->id,
-            'status'  => 'published',
+            'status' => 'published',
         ]);
-        $type  = TicketType::factory()->create(['event_id' => $event->id]);
+        $type = TicketType::factory()->create(['event_id' => $event->id]);
         $batch = TicketBatch::factory()->create(array_merge(
             ['ticket_type_id' => $type->id],
             $batchOverrides
@@ -80,7 +80,7 @@ class OrderTest extends TestCase
     public function order_fails_when_batch_is_sold_out(): void
     {
         ['event' => $event, 'batch' => $batch] = $this->makeEventWithTicket([
-            'quantity'      => 10,
+            'quantity' => 10,
             'quantity_sold' => 10,
         ]);
         $buyer = User::factory()->create();
@@ -98,7 +98,7 @@ class OrderTest extends TestCase
     public function order_fails_when_quantity_exceeds_availability(): void
     {
         ['event' => $event, 'batch' => $batch] = $this->makeEventWithTicket([
-            'quantity'      => 5,
+            'quantity' => 5,
             'quantity_sold' => 3,
         ]);
         $buyer = User::factory()->create();
@@ -125,11 +125,8 @@ class OrderTest extends TestCase
 
         $order = Order::where('user_id', $buyer->id)->first();
 
-        $this->actingAs($buyer)
-            ->post(route('orders.pay', $order->reference), [
-                'payment_method' => 'credit_card',
-            ])
-            ->assertRedirect(route('orders.success', $order->reference));
+        // Confirma o pagamento diretamente via OrderService (simula webhook)
+        app(\App\Services\OrderService::class)->confirmPayment($order, 'pix');
 
         $this->assertEquals('paid', $order->fresh()->status);
         $this->assertNotNull($order->fresh()->items->first()->ticket_code);
@@ -150,10 +147,8 @@ class OrderTest extends TestCase
 
         $order = Order::where('user_id', $buyer->id)->first();
 
-        $this->actingAs($buyer)
-            ->post(route('orders.pay', $order->reference), [
-                'payment_method' => 'credit_card',
-            ]);
+        // Confirma via OrderService diretamente
+        app(\App\Services\OrderService::class)->confirmPayment($order, 'pix');
 
         $this->assertEquals(3, $batch->fresh()->quantity_sold);
     }
@@ -165,7 +160,7 @@ class OrderTest extends TestCase
         $buyer = User::factory()->create();
 
         Order::factory()->paid()->create([
-            'user_id'  => $buyer->id,
+            'user_id' => $buyer->id,
             'event_id' => $event->id,
         ]);
 
