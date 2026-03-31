@@ -42,10 +42,12 @@ return [
     'mercadopago' => [
     'access_token'   => env('MP_ACCESS_TOKEN'),
     'public_key'     => env('MP_PUBLIC_KEY'),
+    'client_id'      => env('MP_CLIENT_ID'),
+    'client_secret'  => env('MP_CLIENT_SECRET'),
     'webhook_secret' => env('MP_WEBHOOK_SECRET'),
     'sandbox'        => env('MP_SANDBOX', true),
     ],
-    
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

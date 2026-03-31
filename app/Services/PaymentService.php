@@ -22,29 +22,15 @@ class PaymentService
         }
     }
 
-    // ── Pix ───────────────────────────────────────────────────
+    // ── Pix com Split ─────────────────────────────────────────
 
     public function processPixPayment(Order $order): array
     {
         try {
-            $client = new PaymentClient();
+            $client  = new PaymentClient();
+            $payload = $this->buildPixPayload($order);
 
-            $payment = $client->create([
-                'transaction_amount' => $order->total / 100, // MP usa reais, não centavos
-                'description'        => "Ingressos — {$order->event->title}",
-                'payment_method_id'  => 'pix',
-                'payer'              => [
-                    'email'             => $order->user->email,
-                    'first_name'        => $this->firstName($order->user->name),
-                    'last_name'         => $this->lastName($order->user->name),
-                    'identification'    => [
-                        'type'   => strtoupper($order->user->profile_type ?? 'cpf'),
-                        'number' => $order->user->document_number,
-                    ],
-                ],
-                'external_reference' => $order->reference,
-                'notification_url'   => route('webhooks.mercadopago'),
-            ]);
+            $payment = $client->create($payload);
 
             if ($payment->status === 'pending') {
                 $txInfo = $payment->point_of_interaction->transaction_data;
@@ -69,6 +55,46 @@ class PaymentService
         }
     }
 
+    public function buildPixPayload(Order $order): array
+    {
+        $organizer = $order->event->organizer;
+
+        $payload = [
+            'transaction_amount' => $order->total / 100,
+            'description'        => "Ingressos — {$order->event->title}",
+            'payment_method_id'  => 'pix',
+            'payer'              => [
+                'email'      => $order->user->email,
+                'first_name' => $this->firstName($order->user->name),
+                'last_name'  => $this->lastName($order->user->name),
+                'identification' => [
+                    'type'   => strtoupper($order->user->profile_type ?? 'cpf'),
+                    'number' => $order->user->document_number,
+                ],
+            ],
+            'external_reference' => $order->reference,
+            'notification_url'   => route('webhooks.mercadopago'),
+        ];
+
+        // Split: só aplica se o organizador tem MP conectado
+        if ($organizer->hasMpConnected() && $organizer->isMpTokenValid()) {
+            $payload['application_fee'] = $order->platform_fee; // centavos
+
+            // Repassa para a conta do organizador
+            $payload['marketplace_fee'] = $order->platform_fee;
+
+            // Token do organizador para receber o repasse
+            // Em produção: usar forward_data com o access_token do organizador
+            $payload['metadata'] = [
+                'organizer_mp_user_id' => $organizer->mp_user_id,
+                'organizer_mp_token'   => $organizer->mp_access_token,
+                'platform_fee_cents'   => $order->platform_fee,
+            ];
+        }
+
+        return $payload;
+    }
+
     // ── Webhook ───────────────────────────────────────────────
 
     public function validateWebhookSignature(
@@ -76,7 +102,10 @@ class PaymentService
         string $signatureHeader,
         string $requestId = ''
     ): bool {
-        // Formato do header: ts=<timestamp>,v1=<hash>
+        if (config('services.mercadopago.sandbox')) {
+            return true;
+        }
+
         preg_match('/ts=(\d+)/', $signatureHeader, $tsMatch);
         preg_match('/v1=([a-f0-9]+)/', $signatureHeader, $hashMatch);
 
@@ -87,14 +116,8 @@ class PaymentService
         $ts       = $tsMatch[1];
         $received = $hashMatch[1];
         $secret   = config('services.mercadopago.webhook_secret', '');
-
         $manifest = "id:{$requestId};request-id:{$requestId};ts:{$ts};";
         $expected = hash_hmac('sha256', $manifest, $secret);
-
-        // Em sandbox, aceita qualquer assinatura para facilitar testes
-        if (config('services.mercadopago.sandbox')) {
-            return true;
-        }
 
         return hash_equals($expected, $received);
     }
@@ -112,7 +135,7 @@ class PaymentService
                 default    => 'pending',
             };
         } catch (\Exception $e) {
-            Log::error('MercadoPago getStatus error', ['message' => $e->getMessage()]);
+            Log::error('MP getStatus error', ['message' => $e->getMessage()]);
             return 'pending';
         }
     }

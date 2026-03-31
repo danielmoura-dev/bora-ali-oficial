@@ -27,12 +27,18 @@ class User extends Authenticatable
         'verification_code',
         'verification_code_expires_at',
         'onboarding_step',
+        'mp_access_token',
+        'mp_refresh_token',
+        'mp_user_id',
+        'mp_token_expires_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
         'verification_code',
+        'mp_access_token',
+        'mp_refresh_token',
     ];
 
     protected $attributes = [
@@ -47,6 +53,7 @@ class User extends Authenticatable
             'verification_code_expires_at' => 'datetime',
             'birth_date' => 'date',
             'onboarding_step' => 'integer',
+            'mp_token_expires_at' => 'datetime',
         ];
     }
 
@@ -76,5 +83,20 @@ class User extends Authenticatable
     public function isCnpj(): bool
     {
         return $this->profile_type === 'cnpj';
+    }
+
+    // Helpers — adicione ao final do model
+    public function hasMpConnected(): bool
+    {
+        return !empty($this->mp_access_token);
+    }
+
+    public function isMpTokenValid(): bool
+    {
+        if (!$this->mp_token_expires_at) {
+            return !empty($this->mp_access_token);
+        }
+
+        return $this->mp_token_expires_at->isFuture();
     }
 }

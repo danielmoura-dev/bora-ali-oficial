@@ -10,6 +10,7 @@ use App\Http\Controllers\Onboarding\OnboardingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TicketTypeController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\MercadoPagoController;
 use Illuminate\Support\Facades\Route;
 
 // Webhook Mercado Pago — sem CSRF
@@ -64,6 +65,14 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/eventos', [EventController::class, 'store'])->name('events.store');
     Route::get('/eventos/meus', [EventController::class, 'my'])->name('events.my');
     Route::patch('/eventos/{slug}/publicar', [EventController::class, 'publish'])->name('events.publish');
+
+    // Mercado Pago OAuth
+    Route::get('/conectar/mercadopago', [MercadoPagoController::class, 'connect'])->name('mp.connect');
+    Route::get('/conectar/mercadopago/callback', [MercadoPagoController::class, 'callback'])->name('mp.callback');
+    Route::get('/conectar/mercadopago/sucesso', [MercadoPagoController::class, 'connected'])->name('mp.connected');
+    Route::post('/conectar/mercadopago/desconectar', [MercadoPagoController::class, 'disconnect'])->name('mp.disconnect');
+
+
 });
 
 // Evento público — depois das rotas estáticas para não capturar "criar" e "meus"

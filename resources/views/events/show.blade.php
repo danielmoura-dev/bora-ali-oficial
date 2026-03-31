@@ -156,6 +156,40 @@
         @auth
             @if (Auth::id() === $event->user_id)
                 <div class="mt-8 space-y-4">
+
+                    {{-- Status do Mercado Pago --}}
+                    @if (Auth::user()->hasMpConnected())
+                        <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                            <span class="text-green-600 text-lg">✅</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-green-800">Mercado Pago conectado</p>
+                                <p class="text-xs text-green-600">Seus repasses estão configurados.</p>
+                            </div>
+                            <form method="POST" action="{{ route('mp.disconnect') }}">
+                                @csrf
+                                <button type="submit" class="text-xs text-red-500 hover:underline">
+                                    Desconectar
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                            <span class="text-yellow-600 text-lg">⚠️</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-yellow-800">Conecte seu Mercado Pago</p>
+                                <p class="text-xs text-yellow-700">
+                                    Necessário para receber os pagamentos dos ingressos.
+                                </p>
+                            </div>
+                            <a href="{{ route('mp.connect') }}"
+                                class="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white
+                      text-xs font-medium rounded-lg transition shrink-0">
+                                Conectar Mercado Pago
+                            </a>
+                        </div>
+                    @endif
+
+                    {{-- Gerenciar ingressos --}}
                     <h2 class="font-semibold text-gray-800">Gerenciar ingressos</h2>
 
                     {{-- Tipos existentes --}}
