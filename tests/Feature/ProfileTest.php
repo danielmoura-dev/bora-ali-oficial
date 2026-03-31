@@ -28,16 +28,16 @@ class ProfileTest extends TestCase
     public function user_can_update_name_and_email(): void
     {
         $user = User::factory()->create([
-            'name'  => 'Nome Antigo',
+            'name' => 'Nome Antigo',
             'email' => 'antigo@exemplo.com',
         ]);
 
         $this->actingAs($user)
             ->patch(route('profile.update'), [
-                'name'  => 'Nome Novo',
+                'name' => 'Nome Novo',
                 'email' => 'novo@exemplo.com',
             ])
-            ->assertRedirect(route('profile.show'));
+            ->assertRedirect(route('auth.verify.notice'));
 
         $updated = $user->fresh();
         $this->assertEquals('Nome Novo', $updated->name);
@@ -45,16 +45,35 @@ class ProfileTest extends TestCase
     }
 
     #[Test]
-    public function email_change_requires_reverification(): void
+    public function user_can_update_name_keeping_same_email(): void
     {
         $user = User::factory()->create([
-            'email'             => 'antigo@exemplo.com',
+            'name' => 'Nome Antigo',
+            'email' => 'mesmo@exemplo.com',
             'email_verified_at' => now(),
         ]);
 
         $this->actingAs($user)
             ->patch(route('profile.update'), [
-                'name'  => $user->name,
+                'name' => 'Nome Novo',
+                'email' => 'mesmo@exemplo.com',
+            ])
+            ->assertRedirect(route('profile.show'));
+
+        $this->assertEquals('Nome Novo', $user->fresh()->name);
+    }
+
+    #[Test]
+    public function email_change_requires_reverification(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'antigo@exemplo.com',
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('profile.update'), [
+                'name' => $user->name,
                 'email' => 'novo@exemplo.com',
             ]);
 
@@ -65,13 +84,13 @@ class ProfileTest extends TestCase
     public function same_email_does_not_require_reverification(): void
     {
         $user = User::factory()->create([
-            'email'             => 'mesmo@exemplo.com',
+            'email' => 'mesmo@exemplo.com',
             'email_verified_at' => now(),
         ]);
 
         $this->actingAs($user)
             ->patch(route('profile.update'), [
-                'name'  => 'Novo Nome',
+                'name' => 'Novo Nome',
                 'email' => 'mesmo@exemplo.com',
             ]);
 
@@ -87,8 +106,8 @@ class ProfileTest extends TestCase
 
         $this->actingAs($user)
             ->patch(route('profile.password'), [
-                'current_password'      => 'SenhaAntiga@1',
-                'password'              => 'SenhaNova@2',
+                'current_password' => 'SenhaAntiga@1',
+                'password' => 'SenhaNova@2',
                 'password_confirmation' => 'SenhaNova@2',
             ])
             ->assertRedirect(route('profile.show'));
@@ -105,8 +124,8 @@ class ProfileTest extends TestCase
 
         $this->actingAs($user)
             ->patch(route('profile.password'), [
-                'current_password'      => 'SenhaErrada@1',
-                'password'              => 'SenhaNova@2',
+                'current_password' => 'SenhaErrada@1',
+                'password' => 'SenhaNova@2',
                 'password_confirmation' => 'SenhaNova@2',
             ])
             ->assertSessionHasErrors('current_password');
@@ -188,12 +207,12 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create([
             'google_id' => '123456',
-            'password'  => null,
+            'password' => null,
         ]);
 
         $this->actingAs($user)
             ->patch(route('profile.update'), [
-                'name'  => 'Nome Atualizado',
+                'name' => 'Nome Atualizado',
                 'email' => $user->email,
             ])
             ->assertRedirect(route('profile.show'));
