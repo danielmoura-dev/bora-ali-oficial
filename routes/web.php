@@ -36,6 +36,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('auth.logout');
 
+    Route::get('/pedidos/{reference}/status', [OrderController::class, 'status'])->name('orders.status');
+    
     // Verificação de e-mail
     Route::get('/verify', [VerificationController::class, 'notice'])->name('auth.verify.notice');
     Route::post('/verify', [VerificationController::class, 'submit'])->name('auth.verify.submit');
