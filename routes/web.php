@@ -11,6 +11,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TicketTypeController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\MercadoPagoController;
+use App\Http\Controllers\Organizer\OrganizerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Webhook Mercado Pago — sem CSRF
@@ -72,6 +73,9 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::get('/conectar/mercadopago/sucesso', [MercadoPagoController::class, 'connected'])->name('mp.connected');
     Route::post('/conectar/mercadopago/desconectar', [MercadoPagoController::class, 'disconnect'])->name('mp.disconnect');
 
+    // Painel do organizador
+    Route::get('/organizador', [OrganizerDashboardController::class, 'index'])->name('organizer.dashboard');
+    Route::get('/organizador/eventos/{slug}/vendas', [OrganizerDashboardController::class, 'eventSales'])->name('organizer.event.sales');
 
 });
 
