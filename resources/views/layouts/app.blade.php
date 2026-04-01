@@ -5,6 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Bora Ali — Eventos Regionais')</title>
+    @if (config('services.google.analytics_id'))
+        <!-- Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.google.analytics_id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', '{{ config('services.google.analytics_id') }}', {
+                'anonymize_ip': true // Boa prática para LGPD
+            });
+        </script>
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -80,7 +95,8 @@
                             <div x-show="open" @click.outside="open = false"
                                 class="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg
                                         border border-gray-100 py-1 text-sm">
-                                <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                <a href="{{ route('profile.show') }}"
+                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
                                     Perfil
                                 </a>
                                 <form method="POST" action="{{ route('auth.logout') }}">
@@ -149,10 +165,12 @@
                         class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Meus Eventos
                     </a>
-                    <a href="{{ route('tickets.my') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <a href="{{ route('tickets.my') }}"
+                        class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Meus Ingressos
                     </a>
-                    <a href="{{ route('profile.show') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
+                    <a href="{{ route('profile.show') }}"
+                        class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg">
                         Perfil
                     </a>
                     <form method="POST" action="{{ route('auth.logout') }}" class="px-3">
@@ -179,6 +197,8 @@
     <main class="max-w-6xl mx-auto px-4 py-6">
         @yield('content')
     </main>
+    
+    @include('partials.cookie-banner')
 
     <script>
         document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
