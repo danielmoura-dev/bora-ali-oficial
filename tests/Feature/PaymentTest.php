@@ -97,13 +97,17 @@ class PaymentTest extends TestCase
             'data' => ['id' => 'mp_mock_123'],
         ]);
 
-        $secret = config('services.mercadopago.webhook_secret', 'test_secret');
-        $signature = hash_hmac('sha256', $payload, $secret);
+        $dataId    = 'mp_mock_123';
+        $requestId = '';
+        $ts        = '1234567890';
+        $secret    = config('services.mercadopago.webhook_secret', 'test_secret');
+        $manifest  = "id:{$dataId};request-id:{$requestId};ts:{$ts};";
+        $signature = hash_hmac('sha256', $manifest, $secret);
 
         $this->postJson(
             route('webhooks.mercadopago'),
             json_decode($payload, true),
-            ['x-signature' => "ts=1234,v1={$signature}"]
+            ['x-signature' => "ts={$ts},v1={$signature}"]
         )->assertStatus(200);
     }
 

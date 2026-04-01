@@ -10,7 +10,7 @@
     </div>
     <h1 class="text-xl font-semibold text-gray-800">Qual é o seu celular?</h1>
     <p class="text-sm text-gray-500 mt-1">
-        Vamos enviar um código de verificação via WhatsApp.
+        Informe seu celular para contato.
     </p>
 </div>
 
