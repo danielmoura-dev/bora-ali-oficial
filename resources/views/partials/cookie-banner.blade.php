@@ -1,5 +1,4 @@
-@if(!request()->cookie('cookies_accepted'))
-<div id="cookie-banner"
+<div id="cookie-banner" style="display:none"
      class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gray-900 bg-opacity-95">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center
                 justify-between gap-4">
@@ -45,5 +44,12 @@ function setCookie(name, value) {
     document.cookie = name + '=' + value + '; expires='
         + expires.toUTCString() + '; path=/';
 }
+
+function getCookie(name) {
+    return document.cookie.split('; ').find(r => r.startsWith(name + '='))?.split('=')[1];
+}
+
+if (!getCookie('cookies_accepted')) {
+    document.getElementById('cookie-banner').style.display = '';
+}
 </script>
-@endif
