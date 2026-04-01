@@ -94,11 +94,13 @@ class OnboardingController extends Controller
             ]);
         }
 
-        Auth::user()->forceFill(['phone' => $formatted])->save();
+        Auth::user()->forceFill([
+            'phone'             => $formatted,
+            'phone_verified_at' => now(),
+            'onboarding_step'   => 4,
+        ])->save();
 
-        $this->whatsApp->sendVerificationCode($formatted);
-
-        return redirect()->route('onboarding.step3.verify');
+        return redirect()->route('home');
     }
     public function step3Verify()
     {

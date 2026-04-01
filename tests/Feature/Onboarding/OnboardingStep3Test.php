@@ -53,20 +53,20 @@ class OnboardingStep3Test extends TestCase
     }
 
     #[Test]
-    public function user_can_request_whatsapp_code(): void
+    public function user_can_submit_phone_and_complete_onboarding(): void
     {
         $user = $this->makeStep3User();
 
-        $response = $this->actingAs($user)
+        $this->actingAs($user)
             ->post(route('onboarding.step3.send'), [
                 'phone' => '(85) 99999-1234',
-            ]);
+            ])
+            ->assertRedirect(route('home'));
 
-        $response->assertRedirect(route('onboarding.step3.verify'));
-
-        // Código deve estar no cache
-        $phone = '5585999991234';
-        $this->assertTrue(Cache::has("whatsapp_code_{$phone}"));
+        $updated = $user->fresh();
+        $this->assertEquals('5585999991234', $updated->phone);
+        $this->assertNotNull($updated->phone_verified_at);
+        $this->assertEquals(4, $updated->onboarding_step);
     }
 
     #[Test]
