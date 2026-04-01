@@ -114,7 +114,8 @@ class MercadoPagoProvider implements PaymentProviderInterface
     public function validateWebhookSignature(
         string $payload,
         string $signature,
-        string $requestId = ''
+        string $requestId = '',
+        string $dataId = ''
     ): bool {
         if (config('services.mercadopago.sandbox')) {
             return true;
@@ -128,7 +129,7 @@ class MercadoPagoProvider implements PaymentProviderInterface
         }
 
         $secret   = config('services.mercadopago.webhook_secret', '');
-        $manifest = "id:{$requestId};request-id:{$requestId};ts:{$tsMatch[1]};";
+        $manifest = "id:{$dataId};request-id:{$requestId};ts:{$tsMatch[1]};";
         $expected = hash_hmac('sha256', $manifest, $secret);
 
         return hash_equals($expected, $hashMatch[1]);

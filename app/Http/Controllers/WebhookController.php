@@ -20,10 +20,11 @@ class WebhookController extends Controller
         $payload   = $request->getContent();
         $signature = $request->header('x-signature', '');
         $requestId = $request->header('x-request-id', '');
+        $dataId    = $request->input('data.id', '');
 
         $provider = new \App\Payment\Providers\MercadoPagoProvider();
 
-        if (!$provider->validateWebhookSignature($payload, $signature, $requestId)) {
+        if (!$provider->validateWebhookSignature($payload, $signature, $requestId, $dataId)) {
             Log::warning('Webhook MP: assinatura inválida');
             return response()->json(['error' => 'Invalid signature'], 401);
         }

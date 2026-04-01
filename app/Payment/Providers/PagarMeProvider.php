@@ -26,7 +26,8 @@ class PagarMeProvider implements PaymentProviderInterface
     public function validateWebhookSignature(
         string $payload,
         string $signature,
-        string $requestId = ''
+        string $requestId = '',
+        string $dataId = ''
     ): bool {
         throw new \RuntimeException('Pagar.me ainda não implementado.');
     }
