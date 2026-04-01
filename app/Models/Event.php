@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Event extends Model
@@ -99,6 +100,13 @@ class Event extends Model
                 ->orWhere('city', 'like', "%{$term}%")
                 ->orWhere('venue_name', 'like', "%{$term}%");
         });
+    }
+
+    // ── Accessors ─────────────────────────────────────────────
+
+    public function coverUrl(): ?string
+    {
+        return $this->cover_image ? Storage::url($this->cover_image) : null;
     }
 
     // ── Helpers ───────────────────────────────────────────────
