@@ -6,7 +6,7 @@
     <div class="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100
                 flex items-center justify-center overflow-hidden">
         @if($event->cover_image)
-            <img src="{{ $event->cover_image }}"
+            <img src="{{ $event->coverUrl() }}"
                  alt="{{ $event->title }}"
                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
         @else

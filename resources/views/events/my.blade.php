@@ -30,7 +30,7 @@
                     <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-100
                                 to-purple-100 flex items-center justify-center shrink-0 overflow-hidden">
                         @if($event->cover_image)
-                            <img src="{{ Storage::url($event->cover_image) }}"
+                            <img src="{{ $event->coverUrl() }}"
                                  class="w-full h-full object-cover">
                         @else
                             <span class="text-2xl">🎉</span>

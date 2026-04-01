@@ -1,5 +1,4 @@
 @extends('layouts.app')
-@use('Illuminate\Support\Facades\Storage')
 @section('title', $event->title . ' — Bora Ali')
 
 @section('content')
@@ -67,7 +66,7 @@
             class="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100
                 rounded-2xl overflow-hidden mb-6 flex items-center justify-center">
             @if ($event->cover_image)
-                <img src="{{ Storage::url($event->cover_image) }}" alt="{{ $event->title }}"
+                <img src="{{ $event->coverUrl() }}" alt="{{ $event->title }}"
                     class="w-full h-full object-cover">
             @else
                 <span class="text-6xl">🎉</span>
