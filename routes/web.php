@@ -29,6 +29,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/organizadores/{username}', [OrganizerPublicController::class, 'showByUsername'])->name('organizer.public');
 Route::get('/organizadores/id/{id}', [OrganizerPublicController::class, 'showById'])->name('organizer.public.id');
 
+// Termos
+Route::get('/termos-de-uso',       fn () => view('legal.terms'))->name('legal.terms');
+Route::get('/politica-de-privacidade', fn () => view('legal.privacy'))->name('legal.privacy');
+
 // Auth — visitantes
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('auth.register');

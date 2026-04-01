@@ -63,7 +63,14 @@
         </a>
     </form>
 
-    <p class="text-center text-sm text-gray-500 mt-6">
+    <p class="text-center text-xs text-gray-400 mt-6 leading-relaxed">
+        Ao entrar, você concorda com os nossos
+        <a href="{{ route('legal.terms') }}" class="underline hover:text-gray-600">Termos de Uso</a>
+        e a
+        <a href="{{ route('legal.privacy') }}" class="underline hover:text-gray-600">Política de Privacidade</a>.
+    </p>
+
+    <p class="text-center text-sm text-gray-500 mt-3">
         Não tem conta?
         <a href="{{ route('auth.register') }}" class="text-indigo-600 font-medium hover:underline">Criar conta</a>
     </p>
