@@ -3,7 +3,7 @@ name: 🚀 Deploy website on push to prod
 on:
   push:
     branches:
-      - cicd
+      - main
 
 jobs:
   web-deploy:
