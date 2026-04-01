@@ -79,6 +79,7 @@ jobs:
           EXCLUDE: "/dist/, /node_modules/, /vendor/"
           SCRIPT_AFTER: |
             cd ${{ secrets.TARGET_PROD }}
+            composer install --no-dev --optimize-autoloader
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
