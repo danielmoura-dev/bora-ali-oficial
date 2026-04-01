@@ -30,7 +30,7 @@ class SendEventReminders extends Command
         foreach ($events as $event) {
             foreach ($event->orders as $order) {
                 Mail::to($order->user->email)
-                    ->send(new EventReminderMail($event, $order));
+                    ->queue(new EventReminderMail($event, $order));
                 $count++;
             }
         }

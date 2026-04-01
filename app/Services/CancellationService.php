@@ -24,7 +24,7 @@ class CancellationService
             }
 
             Mail::to($order->user->email)
-                ->send(new OrderCancelledMail(
+                ->queue(new OrderCancelledMail(
                     $order->load(['event', 'user', 'items.ticketType'])
                 ));
         });
@@ -45,7 +45,7 @@ class CancellationService
             }
 
             Mail::to($order->user->email)
-                ->send(new OrderCancelledMail(
+                ->queue(new OrderCancelledMail(
                     $order->load(['event', 'user', 'items.ticketType'])
                 ));
         });
@@ -70,7 +70,7 @@ class CancellationService
                 }
 
                 Mail::to($order->user->email)
-                    ->send(new OrderCancelledMail($order));
+                    ->queue(new OrderCancelledMail($order));
             }
         });
     }

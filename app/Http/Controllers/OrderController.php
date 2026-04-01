@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessPixPaymentJob;
 use App\Models\Event;
 use App\Models\Order;
-use App\Payment\PaymentManager;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    public function __construct(
-        private OrderService   $orderService,
-        private PaymentManager $paymentManager,
-    ) {}
+    public function __construct(private OrderService $orderService) {}
 
     public function store(Request $request, string $slug)
     {
@@ -64,30 +61,17 @@ class OrderController extends Controller
     {
         $order = Order::where('reference', $reference)
             ->where('user_id', Auth::id())
-            ->with(['user', 'event.organizer', 'items'])
             ->firstOrFail();
 
         $request->validate([
             'payment_method' => ['required', 'in:pix'],
         ]);
 
-        // Seleciona o provider correto baseado na configuração do evento
-        $provider = $this->paymentManager->for($order->event);
-        $result   = $provider->processPixPayment($order);
+        $order->forceFill(['payment_method' => 'pix'])->save();
 
-        if ($result['status'] === 'pending_pix') {
-            $order->forceFill([
-                'payment_id'       => $result['payment_id'],
-                'payment_method'   => 'pix',
-                'payment_metadata' => $result,
-            ])->save();
+        ProcessPixPaymentJob::dispatch($order);
 
-            return view('orders.pending', compact('order', 'result'));
-        }
-
-        return redirect()
-            ->route('orders.checkout', $order->reference)
-            ->withErrors(['payment' => $result['message'] ?? 'Erro ao gerar Pix.']);
+        return view('orders.pending', compact('order'));
     }
 
     public function success(string $reference)
@@ -118,8 +102,9 @@ class OrderController extends Controller
             ->firstOrFail();
 
         return response()->json([
-            'status' => $order->status,
-            'paid'   => $order->isPaid(),
+            'status'           => $order->status,
+            'paid'             => $order->isPaid(),
+            'payment_metadata' => $order->payment_metadata,
         ]);
     }
 }

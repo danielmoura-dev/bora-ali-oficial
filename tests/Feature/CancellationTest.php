@@ -77,7 +77,7 @@ class CancellationTest extends TestCase
         $this->actingAs($buyer)
             ->delete(route('orders.cancel', $order->reference));
 
-        Mail::assertSent(OrderCancelledMail::class, function ($mail) use ($buyer) {
+        Mail::assertQueued(OrderCancelledMail::class, function ($mail) use ($buyer) {
             return $mail->hasTo($buyer->email);
         });
     }
@@ -193,6 +193,6 @@ class CancellationTest extends TestCase
 
         $this->assertEquals('refunded', $order->fresh()->status);
 
-        Mail::assertSent(OrderCancelledMail::class);
+        Mail::assertQueued(OrderCancelledMail::class);
     }
 }
