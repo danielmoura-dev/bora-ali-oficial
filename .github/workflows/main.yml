@@ -74,8 +74,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: 22022
           TARGET: ${{ vars.TARGET_STG }}
-          SSH_PORT: 22022
           EXCLUDE: "/dist/, /node_modules/, /vendor/"
           SCRIPT_AFTER: |
             cd ${{ secrets.TARGET_PROD }}
