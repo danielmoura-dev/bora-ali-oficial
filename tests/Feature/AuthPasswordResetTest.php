@@ -27,7 +27,7 @@ class AuthPasswordResetTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('status');
 
-        Mail::assertQueued(PasswordResetMail::class, fn ($mail) => $mail->hasTo('usuario@exemplo.com'));
+        Mail::assertSent(PasswordResetMail::class, fn ($mail) => $mail->hasTo('usuario@exemplo.com'));
     }
 
     #[Test]

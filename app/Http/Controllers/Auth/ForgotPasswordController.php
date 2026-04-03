@@ -39,7 +39,7 @@ class ForgotPasswordController extends Controller
                 'email' => $user->email,
             ]);
 
-            Mail::to($user->email)->queue(new PasswordResetMail($url, $user->name));
+            Mail::to($user->email)->send(new PasswordResetMail($url, $user->name));
         }
 
         return back()->with('status', 'Se este e-mail estiver cadastrado, você receberá as instruções em breve.');
