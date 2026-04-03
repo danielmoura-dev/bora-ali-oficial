@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
@@ -43,6 +45,11 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+
+    Route::get('/esqueci-minha-senha', [ForgotPasswordController::class, 'show'])->name('password.request');
+    Route::post('/esqueci-minha-senha', [ForgotPasswordController::class, 'send'])->name('password.email');
+    Route::get('/redefinir-senha/{token}', [ResetPasswordController::class, 'show'])->name('password.reset');
+    Route::post('/redefinir-senha', [ResetPasswordController::class, 'update'])->name('password.update');
 });
 
 // Autenticados com onboarding completo
