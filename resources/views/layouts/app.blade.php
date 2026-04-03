@@ -365,6 +365,7 @@
     </main>
 
     @include('partials.cookie-banner')
+    @stack('scripts')
 
     <script>
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
