@@ -25,6 +25,7 @@
             <input type="password" name="password" required
                 class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none
                        focus:ring-2 focus:ring-indigo-500 text-sm @error('password') border-red-400 @enderror">
+            <p class="text-gray-400 text-xs mt-1">Mínimo 8 caracteres, com letras e números.</p>
             @error('password')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror

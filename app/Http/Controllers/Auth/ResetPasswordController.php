@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordController extends Controller
 {
@@ -23,7 +24,7 @@ class ResetPasswordController extends Controller
         $request->validate([
             'email'                 => ['required', 'email'],
             'token'                 => ['required'],
-            'password'              => ['required', 'min:8', 'confirmed'],
+            'password'              => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
 
         $record = DB::table('password_reset_tokens')
