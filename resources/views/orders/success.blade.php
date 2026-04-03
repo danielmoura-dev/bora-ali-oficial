@@ -6,7 +6,8 @@
     <div class="text-6xl mb-4">🎉</div>
     <h1 class="text-2xl font-bold text-gray-800 mb-2">Pedido confirmado!</h1>
     <p class="text-gray-500 mb-2">
-        Seus ingressos para <strong>{{ $order->event->title }}</strong> estão garantidos.
+        {{ ucfirst($order->event->ticketLabel(true)) }} para
+        <strong>{{ $order->event->title }}</strong> garantidos.
     </p>
     <p class="text-sm text-gray-400 mb-8">Pedido: {{ $order->reference }}</p>
 
@@ -15,7 +16,9 @@
             <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                 <div>
                     <p class="font-medium text-sm text-gray-800">{{ $item->ticketType->name }}</p>
-                    <p class="text-xs text-gray-400">{{ $item->quantity }} ingresso(s)</p>
+                    <p class="text-xs text-gray-400">
+                        {{ $item->quantity }} {{ $order->event->ticketLabel($item->quantity > 1) }}
+                    </p>
                 </div>
                 <div class="text-right">
                     <p class="text-xs font-mono font-bold text-indigo-600 tracking-widest">
@@ -29,9 +32,9 @@
 
     <div class="flex flex-col sm:flex-row gap-3 justify-center">
         <a href="{{ route('tickets.my') }}"
-           class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white
+           class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white
                   font-medium rounded-xl transition text-sm">
-            Ver meus ingressos
+            Meus {{ $order->event->ticketLabel(true) }}
         </a>
         <a href="{{ route('home') }}"
            class="px-6 py-3 border border-gray-200 hover:bg-gray-50

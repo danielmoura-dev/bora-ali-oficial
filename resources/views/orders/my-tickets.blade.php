@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Meus Ingressos</h1>
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Meus Ingressos e Inscrições</h1>
 
     @if($orders->isEmpty())
         <div class="text-center py-20 text-gray-400">
@@ -55,7 +55,9 @@
                                     border-b border-gray-50 last:border-0">
                             <div>
                                 <p class="text-sm text-gray-700">{{ $item->ticketType->name }}</p>
-                                <p class="text-xs text-gray-400">{{ $item->quantity }} ingresso(s)</p>
+                                <p class="text-xs text-gray-400">
+                        {{ $item->quantity }} {{ $order->event->ticketLabel($item->quantity > 1) }}
+                    </p>
                             </div>
                             <p class="font-mono font-bold text-indigo-600 text-sm tracking-widest">
                                 {{ $item->ticket_code }}

@@ -22,7 +22,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit"
-                                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700
+                                    class="px-4 py-2 bg-orange-500 hover:bg-orange-600
                                            text-white text-sm rounded-lg transition">
                                     Publicar evento
                                 </button>
@@ -63,19 +63,26 @@
 
         {{-- Capa --}}
         <div
-            class="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100
+            class="aspect-video bg-gradient-to-br from-orange-100 to-yellow-100
                 rounded-2xl overflow-hidden mb-6 flex items-center justify-center">
             @if ($event->cover_image)
                 <img src="{{ $event->coverUrl() }}" alt="{{ $event->title }}"
                     class="w-full h-full object-cover">
             @else
-                <span class="text-6xl">🎉</span>
+                <span class="text-6xl">
+                    {{ $event->category?->icon ?? '🎉' }}
+                </span>
             @endif
         </div>
 
         {{-- Cabeçalho --}}
         <div class="mb-6">
             <div class="flex flex-wrap items-center gap-2 mb-3">
+                @if ($event->category)
+                    <span class="text-xs font-medium px-3 py-1 bg-orange-100 text-orange-700 rounded-full">
+                        {{ $event->category->icon }} {{ $event->category->name }}
+                    </span>
+                @endif
                 @if ($event->is_free)
                     <span class="text-xs font-medium px-3 py-1 bg-green-100 text-green-700 rounded-full">
                         Gratuito
@@ -92,7 +99,7 @@
                 {{ $event->title }}
             </h1>
 
-            <p class="text-indigo-600 font-medium">
+            <p class="text-orange-500 font-medium">
                 {{ $event->starts_at->translatedFormat('D, d \d\e M \d\e Y · H:i') }}
                 @if ($event->ends_at->isSameDay($event->starts_at))
                     até {{ $event->ends_at->format('H:i') }}
@@ -103,7 +110,7 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {{-- Descrição --}}
+            {{-- Descrição e campos extras --}}
             <div class="sm:col-span-2 space-y-6">
                 <div class="bg-white rounded-2xl border border-gray-100 p-6">
                     <h2 class="font-semibold text-gray-800 mb-3">Sobre o evento</h2>
@@ -111,6 +118,25 @@
                         {{ $event->description }}
                     </div>
                 </div>
+
+                {{-- Campos extras da categoria --}}
+                @if ($event->fieldValues->isNotEmpty())
+                    <div class="bg-white rounded-2xl border border-gray-100 p-6">
+                        <h2 class="font-semibold text-gray-800 mb-4">
+                            {{ $event->category?->icon }} Detalhes
+                        </h2>
+                        <dl class="space-y-3">
+                            @foreach ($event->fieldValues as $fv)
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                        {{ $fv->field->label }}
+                                    </dt>
+                                    <dd class="text-sm text-gray-700 mt-0.5">{{ $fv->value }}</dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    </div>
+                @endif
             </div>
 
             {{-- Sidebar --}}
@@ -134,8 +160,8 @@
                                 class="w-9 h-9 rounded-full object-cover">
                         @else
                             <div
-                                class="w-9 h-9 rounded-full bg-indigo-100 flex items-center
-                        justify-center text-indigo-600 font-bold text-sm">
+                                class="w-9 h-9 rounded-full bg-orange-100 flex items-center
+                        justify-center text-orange-600 font-bold text-sm">
                                 {{ strtoupper(substr($event->organizer->name, 0, 1)) }}
                             </div>
                         @endif
@@ -143,7 +169,7 @@
                             <p class="text-sm font-medium text-gray-700">{{ $event->organizer->name }}</p>
                             @if ($event->organizer->username)
                                 <a href="{{ route('organizer.public', $event->organizer->username) }}"
-                                    class="text-xs text-indigo-600 hover:underline">
+                                    class="text-xs text-orange-500 hover:underline">
                                     Ver perfil →
                                 </a>
                             @endif
@@ -151,11 +177,13 @@
                     </div>
                 </div>
 
-                {{-- CTA Ingresso --}}
+                {{-- CTA Ingresso/Inscrição --}}
                 @if (!$event->isFinished() && $event->isPublished())
                     @if ($event->ticketTypes->isNotEmpty())
                         <div class="bg-white rounded-2xl border border-gray-100 p-4">
-                            <h3 class="font-semibold text-gray-800 text-sm mb-3">🎫 Ingressos</h3>
+                            <h3 class="font-semibold text-gray-800 text-sm mb-3">
+                                🎫 {{ $event->ticketLabel(true, true) }}
+                            </h3>
                             <form method="POST" action="{{ route('orders.store', $event->slug) }}">
                                 @csrf
                                 @foreach ($event->ticketTypes as $type)
@@ -166,8 +194,11 @@
                                     border-b border-gray-50 last:border-0">
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700">{{ $type->name }}</p>
-                                                <p class="text-xs text-indigo-600 font-medium">
+                                                <p class="text-xs text-orange-500 font-medium">
                                                     {{ $batch->formattedPrice() }}
+                                                    @if (!$event->is_free && !$event->absorb_service_fee)
+                                                        <span class="text-gray-400">+ R$ 1,00 taxa</span>
+                                                    @endif
                                                     <span class="text-gray-400">({{ $batch->name }})</span>
                                                 </p>
                                             </div>
@@ -183,9 +214,9 @@
                                     @endif
                                 @endforeach
                                 <button type="submit"
-                                    class="w-full mt-3 py-2.5 bg-indigo-600 hover:bg-indigo-700
+                                    class="w-full mt-3 py-2.5 bg-orange-500 hover:bg-orange-600
                                text-white font-semibold rounded-xl text-sm transition">
-                                    Comprar ingresso
+                                    Comprar {{ $event->ticketLabel() }}
                                 </button>
                             </form>
                         </div>
@@ -199,7 +230,6 @@
             @if (Auth::id() === $event->user_id)
                 <div class="mt-8 space-y-4">
 
-                    {{-- Status do Mercado Pago — só mostra se o evento usar split --}}
                     @if ($event->usesSplit())
                         @if (Auth::user()->hasMpConnected())
                             <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
@@ -243,10 +273,10 @@
                         </div>
                     @endif
 
-                    {{-- Gerenciar ingressos --}}
-                    <h2 class="font-semibold text-gray-800">Gerenciar ingressos</h2>
+                    <h2 class="font-semibold text-gray-800">
+                        Gerenciar {{ $event->ticketLabel(true) }}
+                    </h2>
 
-                    {{-- Tipos existentes --}}
                     @foreach ($event->ticketTypes as $type)
                         <div class="bg-white rounded-2xl border border-gray-100 p-4">
                             <p class="font-medium text-gray-700 text-sm mb-2">{{ $type->name }}</p>
@@ -259,12 +289,12 @@
                                 </div>
                             @endforeach
 
-                            {{-- Adicionar lote --}}
                             <details class="mt-3">
-                                <summary class="text-xs text-indigo-600 cursor-pointer hover:underline">
+                                <summary class="text-xs text-orange-500 cursor-pointer hover:underline">
                                     + Adicionar lote
                                 </summary>
-                                <form method="POST" action="{{ route('tickets.batches.store', [$event->slug, $type->id]) }}"
+                                <form method="POST"
+                                    action="{{ route('tickets.batches.store', [$event->slug, $type->id]) }}"
                                     class="mt-3 space-y-2">
                                     @csrf
                                     <input type="text" name="name" placeholder="Nome do lote (ex: 1º Lote)"
@@ -283,15 +313,15 @@
                         </div>
                     @endforeach
 
-                    {{-- Adicionar tipo --}}
                     <details class="bg-white rounded-2xl border border-dashed border-gray-200 p-4">
-                        <summary class="text-sm text-indigo-600 cursor-pointer hover:underline font-medium">
-                            + Novo tipo de ingresso
+                        <summary class="text-sm text-orange-500 cursor-pointer hover:underline font-medium">
+                            + Novo tipo de {{ $event->ticketLabel() }}
                         </summary>
                         <form method="POST" action="{{ route('tickets.types.store', $event->slug) }}"
                             class="mt-4 space-y-3">
                             @csrf
-                            <input type="text" name="name" placeholder="Nome (ex: Inteira, VIP, Meia)"
+                            <input type="text" name="name"
+                                placeholder="Nome (ex: Inteira, VIP, Meia)"
                                 class="w-full px-4 py-2 text-sm border border-gray-200 rounded-xl">
                             <input type="text" name="description" placeholder="Descrição (opcional)"
                                 class="w-full px-4 py-2 text-sm border border-gray-200 rounded-xl">
@@ -299,7 +329,8 @@
                                 <input type="checkbox" name="is_half_price" value="1">
                                 É meia-entrada
                             </label>
-                            <button type="submit" class="w-full py-2 bg-indigo-600 text-white text-sm rounded-xl">
+                            <button type="submit"
+                                class="w-full py-2 bg-orange-500 text-white text-sm rounded-xl">
                                 Adicionar tipo
                             </button>
                         </form>

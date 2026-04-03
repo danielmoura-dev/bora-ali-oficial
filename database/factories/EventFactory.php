@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -15,8 +16,9 @@ class EventFactory extends Factory
         $endsAt   = (clone $startsAt)->modify('+' . rand(2, 8) . ' hours');
 
         return [
-            'user_id'       => User::factory(),
-            'title'         => $title,
+            'user_id'             => User::factory(),
+            'category_id'         => null,
+            'title'               => $title,
             'slug'          => Str::slug($title) . '-' . $this->faker->unique()->randomNumber(4),
             'description'   => $this->faker->paragraphs(3, true),
             'cover_image'   => null,
@@ -26,8 +28,10 @@ class EventFactory extends Factory
             'state'         => $this->faker->randomElement(['CE', 'SP', 'RJ', 'PE', 'BA']),
             'starts_at'     => $startsAt,
             'ends_at'       => $endsAt,
-            'status'        => 'published',
-            'is_free'       => $this->faker->boolean(30),
+            'status'              => 'published',
+            'is_free'             => $this->faker->boolean(30),
+            'absorb_service_fee'  => false,
+            'ticket_nomenclature' => 'ingresso',
         ];
     }
 
