@@ -19,11 +19,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\OrganizerPublicController;
 use App\Http\Controllers\CancellationController;
-use App\Http\Controllers\InertiaController;
-use Illuminate\Support\Facades\Route;
 
-//innertia route
-Route::get('/eventos', [InertiaController::class, 'show']);
+use Illuminate\Support\Facades\Route;
 
 // Webhook Mercado Pago — sem CSRF
 Route::post('/webhooks/mercadopago', [WebhookController::class, 'mercadopago'])->name('webhooks.mercadopago');
@@ -31,7 +28,7 @@ Route::post('/webhooks/mercadopago', [WebhookController::class, 'mercadopago'])-
 // Página inicial (pública)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Perfis públicos
+// Perfis públicos 
 Route::get('/organizadores/{username}', [OrganizerPublicController::class, 'showByUsername'])->name('organizer.public');
 Route::get('/organizadores/id/{id}', [OrganizerPublicController::class, 'showById'])->name('organizer.public.id');
 
