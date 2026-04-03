@@ -24,7 +24,7 @@
                              alt="{{ $event->title }}"
                              class="w-full h-full object-cover">
                     @else
-                        <div class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600
+                        <div class="w-full h-full bg-gradient-to-br from-orange-500 to-orange-600
                                     flex items-center justify-center">
                             <span class="text-7xl">🎉</span>
                         </div>
@@ -78,7 +78,7 @@
                    class="flex items-start gap-3 group">
                     <div class="min-w-0 flex-1">
                         <h2 class="font-semibold text-gray-900 text-base leading-snug
-                                   group-hover:text-indigo-600 transition truncate">
+                                   group-hover:text-orange-500 transition truncate">
                             {{ $event->title }}
                         </h2>
                         <div class="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
@@ -100,7 +100,7 @@
                             </span>
                         </div>
                     </div>
-                    <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-600 shrink-0 mt-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-orange-500 shrink-0 mt-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </a>
@@ -131,7 +131,7 @@
             @if($query)
                 <p class="text-sm mt-1">Tente buscar por outro termo ou cidade.</p>
                 <a href="{{ route('home') }}"
-                   class="mt-4 inline-block text-indigo-600 text-sm hover:underline">
+                   class="mt-4 inline-block text-orange-500 text-sm hover:underline">
                     Ver todos os eventos
                 </a>
             @else
