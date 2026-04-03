@@ -6,7 +6,7 @@
             Usamos cookies essenciais e de análise para melhorar sua
             experiência. Ao continuar navegando, você concorda com nossa
             <a href="{{ route('legal.privacy') }}"
-               class="text-indigo-400 hover:underline">
+               class="text-orange-400 hover:underline">
                 Política de Privacidade
             </a>.
         </p>
@@ -17,7 +17,7 @@
                 Só essenciais
             </button>
             <button onclick="acceptCookies()"
-                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700
+                    class="px-6 py-2 bg-orange-500 hover:bg-orange-600
                            text-white text-sm font-medium rounded-xl transition">
                 Aceitar todos
             </button>
