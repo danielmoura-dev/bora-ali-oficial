@@ -33,6 +33,7 @@ class OrganizerPublicController extends Controller
             ->published()
             ->current()
             ->orderBy('starts_at')
+            ->with('ticketTypes.batches')
             ->get();
 
         $finishedEvents = Event::where('user_id', $organizer->id)
@@ -40,6 +41,7 @@ class OrganizerPublicController extends Controller
             ->finished()
             ->orderByDesc('ends_at')
             ->limit(6)
+            ->with('ticketTypes.batches')
             ->get();
 
         $totalEvents = Event::where('user_id', $organizer->id)

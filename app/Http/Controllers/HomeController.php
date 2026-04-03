@@ -15,6 +15,7 @@ class HomeController extends Controller
             ->current()
             ->when($query, fn ($q) => $q->search($query))
             ->orderBy('starts_at')
+            ->with('ticketTypes.batches')
             ->get();
 
         $finishedEvents = Event::published()
@@ -22,6 +23,7 @@ class HomeController extends Controller
             ->when($query, fn ($q) => $q->search($query))
             ->orderByDesc('ends_at')
             ->limit(12)
+            ->with('ticketTypes.batches')
             ->get();
 
         return view('home', compact('currentEvents', 'finishedEvents', 'query'));
