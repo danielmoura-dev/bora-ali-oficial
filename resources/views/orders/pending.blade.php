@@ -9,40 +9,42 @@
         Escaneie o QR Code ou copie o código. Seu ingresso será confirmado automaticamente.
     </p>
 
-    {{-- QR Code --}}
-    @if(!empty($result['pix_qrcode']))
+    {{-- QR Code — aparece via polling quando o job gerar o Pix --}}
+    <div id="qrcode-container" class="hidden">
         <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-4 inline-block">
-            <img src="data:image/png;base64,{{ $result['pix_qrcode'] }}"
-                 alt="QR Code Pix"
-                 class="w-52 h-52 mx-auto">
+            <img id="qr-img" src="" alt="QR Code Pix" class="w-52 h-52 mx-auto">
         </div>
-    @endif
+    </div>
 
     {{-- Copia e cola --}}
-    @if(!empty($result['pix_copy_paste']))
-        <div class="bg-gray-50 rounded-2xl border border-gray-100 p-4 mb-6 text-left">
-            <p class="text-xs text-gray-500 mb-2 font-medium">Pix copia e cola:</p>
-            <p class="font-mono text-xs text-gray-700 break-all leading-relaxed"
-               id="pix-code">{{ $result['pix_copy_paste'] }}</p>
-            <button onclick="copyPix()"
-                    id="copy-btn"
-                    class="mt-3 w-full py-2 bg-gray-800 hover:bg-gray-900 text-white
-                           text-sm font-medium rounded-xl transition">
-                Copiar código
-            </button>
-        </div>
-    @endif
+    <div id="copypaste-container" class="hidden bg-gray-50 rounded-2xl border border-gray-100 p-4 mb-6 text-left">
+        <p class="text-xs text-gray-500 mb-2 font-medium">Pix copia e cola:</p>
+        <p class="font-mono text-xs text-gray-700 break-all leading-relaxed" id="pix-code"></p>
+        <button onclick="copyPix()"
+                id="copy-btn"
+                class="mt-3 w-full py-2 bg-gray-800 hover:bg-gray-900 text-white
+                       text-sm font-medium rounded-xl transition">
+            Copiar código
+        </button>
+    </div>
 
-    {{-- Status dinâmico --}}
-    <div id="status-box"
-         class="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6">
+    {{-- Gerando Pix (enquanto job não terminou) --}}
+    <div id="generating-box" class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
         <div class="flex items-center justify-center gap-2">
-            <svg id="spinner" class="animate-spin w-4 h-4 text-yellow-600"
-                 fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10"
-                        stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"/>
+            <svg class="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            <p class="text-sm text-blue-700 font-medium">Gerando seu Pix...</p>
+        </div>
+    </div>
+
+    {{-- Aguardando pagamento (aparece depois do QR Code) --}}
+    <div id="status-box" class="hidden bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6">
+        <div class="flex items-center justify-center gap-2">
+            <svg id="spinner" class="animate-spin w-4 h-4 text-yellow-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
             </svg>
             <p class="text-sm text-yellow-800 font-medium" id="status-text">
                 Aguardando pagamento...
@@ -83,11 +85,24 @@ function copyPix() {
     });
 }
 
-// Polling — verifica status a cada 5 segundos
+function showQrCode(metadata) {
+    if (metadata?.pix_qrcode) {
+        document.getElementById('qr-img').src = 'data:image/png;base64,' + metadata.pix_qrcode;
+        document.getElementById('qrcode-container').classList.remove('hidden');
+    }
+    if (metadata?.pix_copy_paste) {
+        document.getElementById('pix-code').textContent = metadata.pix_copy_paste;
+        document.getElementById('copypaste-container').classList.remove('hidden');
+    }
+    document.getElementById('generating-box').classList.add('hidden');
+    document.getElementById('status-box').classList.remove('hidden');
+}
+
 const statusUrl  = '{{ route('orders.status', $order->reference) }}';
 const successUrl = '{{ route('orders.success', $order->reference) }}';
 let attempts     = 0;
 const maxAttempts = 36; // 3 minutos
+let qrShown = false;
 
 const interval = setInterval(async () => {
     attempts++;
@@ -101,10 +116,13 @@ const interval = setInterval(async () => {
     }
 
     try {
-        const res  = await fetch(statusUrl, {
-            headers: { 'Accept': 'application/json' }
-        });
+        const res  = await fetch(statusUrl, { headers: { 'Accept': 'application/json' } });
         const data = await res.json();
+
+        if (!qrShown && data.payment_metadata) {
+            showQrCode(data.payment_metadata);
+            qrShown = true;
+        }
 
         if (data.paid) {
             clearInterval(interval);
@@ -113,10 +131,7 @@ const interval = setInterval(async () => {
             document.getElementById('status-text').textContent =
                 '✅ Pagamento confirmado! Redirecionando...';
             document.getElementById('spinner').classList.add('hidden');
-
-            setTimeout(() => {
-                window.location.href = successUrl;
-            }, 1500);
+            setTimeout(() => { window.location.href = successUrl; }, 1500);
         }
     } catch (e) {
         console.error('Erro ao verificar status:', e);

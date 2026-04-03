@@ -58,7 +58,7 @@ class NotificationTest extends TestCase
         app(\App\Services\OrderService::class)
             ->confirmPayment($order, 'pix');
 
-        Mail::assertSent(OrderConfirmedMail::class, function ($mail) use ($buyer, $order) {
+        Mail::assertQueued(OrderConfirmedMail::class, function ($mail) use ($buyer, $order) {
             return $mail->hasTo($buyer->email)
                 && $mail->order->id === $order->id;
         });
@@ -118,7 +118,7 @@ class NotificationTest extends TestCase
 
         $this->artisan('events:send-reminders')->assertExitCode(0);
 
-        Mail::assertSent(EventReminderMail::class, function ($mail) use ($buyer) {
+        Mail::assertQueued(EventReminderMail::class, function ($mail) use ($buyer) {
             return $mail->hasTo($buyer->email);
         });
     }

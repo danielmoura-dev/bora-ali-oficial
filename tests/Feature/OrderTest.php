@@ -8,6 +8,7 @@ use App\Models\TicketBatch;
 use App\Models\TicketType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -115,6 +116,8 @@ class OrderTest extends TestCase
     #[Test]
     public function mock_payment_confirms_order(): void
     {
+        Mail::fake();
+
         ['event' => $event, 'batch' => $batch] = $this->makeEventWithTicket();
         $buyer = User::factory()->create();
 
@@ -135,6 +138,8 @@ class OrderTest extends TestCase
     #[Test]
     public function paid_order_decrements_batch_quantity(): void
     {
+        Mail::fake();
+
         ['event' => $event, 'batch' => $batch] = $this->makeEventWithTicket([
             'quantity' => 50,
         ]);

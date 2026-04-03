@@ -89,7 +89,7 @@ class OrderService
             $order = $order->fresh(['items.batch', 'items.ticketType', 'event', 'user']);
 
             \Illuminate\Support\Facades\Mail::to($order->user->email)
-                ->send(new \App\Mail\OrderConfirmedMail($order));
+                ->queue(new \App\Mail\OrderConfirmedMail($order));
 
             return $order;
         });
