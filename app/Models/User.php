@@ -105,6 +105,11 @@ class User extends Authenticatable
         return $this->mp_token_expires_at->isFuture();
     }
 
+    public function hasEvents(): bool
+    {
+        return \App\Models\Event::where('user_id', $this->id)->exists();
+    }
+
     public function getProfileUrlAttribute(): string
     {
         if ($this->username) {
