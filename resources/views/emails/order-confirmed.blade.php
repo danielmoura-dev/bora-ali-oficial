@@ -36,13 +36,16 @@
 <div class="container">
     <div class="header">
         <h1>🎉 Pedido confirmado!</h1>
-        <p>Seus ingressos estão garantidos</p>
+        <p>
+            Sua {{ $order->event->ticketLabel() }} está confirmada
+        </p>
     </div>
 
     <div class="body">
         <p>Olá, <strong>{{ $order->user->name }}</strong>!</p>
         <p style="color: #4b5563; font-size: 14px;">
-            Seu pagamento foi confirmado e seus ingressos estão prontos.
+            Seu pagamento foi confirmado e
+            {{ $order->event->ticketLabel(true) }} estão prontos.
         </p>
 
         {{-- Info do evento --}}
@@ -85,7 +88,7 @@
         @endforeach
 
         <a href="{{ route('tickets.my') }}" class="btn">
-            Ver meus ingressos
+            Meus {{ $order->event->ticketLabel(true) }}
         </a>
 
         <p style="font-size: 13px; color: #6b7280; text-align: center;">

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,27 +20,42 @@ class EventCreateTest extends TestCase
         return User::factory()->create();
     }
 
+    private function makeCategory(): Category
+    {
+        return Category::create([
+            'name'       => 'Festa, Festival ou Show',
+            'slug'       => 'festa-festival-show',
+            'icon'       => '🎉',
+            'is_active'  => true,
+            'sort_order' => 1,
+        ]);
+    }
+
     private function validPayload(array $overrides = []): array
     {
         return array_merge([
-            'title' => 'Festival de Verão',
-            'description' => str_repeat('Descrição incrível do evento. ', 5),
-            'venue_name' => 'Arena Castelão',
-            'venue_address' => 'Av. Alberto Craveiro, 2901',
-            'city' => 'Fortaleza',
-            'state' => 'CE',
-            'starts_at' => now()->addDays(10)->format('Y-m-d\TH:i'),
-            'ends_at' => now()->addDays(10)->addHours(6)->format('Y-m-d\TH:i'),
-            'is_free' => false,
-            'payment_provider' => 'mercadopago',
-            'payment_mode' => 'direct',
-            'payment_methods' => ['pix'],
+            'title'               => 'Festival de Verão',
+            'description'         => str_repeat('Descrição incrível do evento. ', 5),
+            'venue_name'          => 'Arena Castelão',
+            'venue_address'       => 'Av. Alberto Craveiro, 2901',
+            'city'                => 'Fortaleza',
+            'state'               => 'CE',
+            'starts_at'           => now()->addDays(10)->format('Y-m-d\TH:i'),
+            'ends_at'             => now()->addDays(10)->addHours(6)->format('Y-m-d\TH:i'),
+            'is_free'             => false,
+            'absorb_service_fee'  => false,
+            'ticket_nomenclature' => 'ingresso',
+            'payment_provider'    => 'mercadopago',
+            'payment_mode'        => 'direct',
+            'payment_methods'     => ['pix'],
         ], $overrides);
     }
 
     #[Test]
     public function create_event_page_is_accessible_for_authenticated_users(): void
     {
+        $this->makeCategory();
+
         $this->actingAs($this->makeUser())
             ->get(route('events.create'))
             ->assertStatus(200);
@@ -108,7 +124,7 @@ class EventCreateTest extends TestCase
         $this->actingAs($this->makeUser())
             ->post(route('events.store'), $this->validPayload([
                 'starts_at' => now()->addDays(10)->format('Y-m-d\TH:i'),
-                'ends_at' => now()->addDays(9)->format('Y-m-d\TH:i'),
+                'ends_at'   => now()->addDays(9)->format('Y-m-d\TH:i'),
             ]))
             ->assertSessionHasErrors('ends_at');
     }
@@ -141,12 +157,56 @@ class EventCreateTest extends TestCase
     }
 
     #[Test]
-    public function user_can_publish_their_own_event(): void
+    public function event_can_have_a_category(): void
+    {
+        $user     = $this->makeUser();
+        $category = $this->makeCategory();
+
+        $this->actingAs($user)
+            ->post(route('events.store'), $this->validPayload([
+                'category_id' => $category->id,
+            ]));
+
+        $event = Event::where('title', 'Festival de Verão')->first();
+        $this->assertEquals($category->id, $event->category_id);
+    }
+
+    #[Test]
+    public function event_stores_absorb_service_fee(): void
     {
         $user = $this->makeUser();
+
+        $this->actingAs($user)
+            ->post(route('events.store'), $this->validPayload([
+                'is_free'            => false,
+                'absorb_service_fee' => true,
+            ]));
+
+        $event = Event::where('title', 'Festival de Verão')->first();
+        $this->assertTrue($event->absorb_service_fee);
+    }
+
+    #[Test]
+    public function event_stores_ticket_nomenclature(): void
+    {
+        $user = $this->makeUser();
+
+        $this->actingAs($user)
+            ->post(route('events.store'), $this->validPayload([
+                'ticket_nomenclature' => 'inscricao',
+            ]));
+
+        $event = Event::where('title', 'Festival de Verão')->first();
+        $this->assertEquals('inscricao', $event->ticket_nomenclature);
+    }
+
+    #[Test]
+    public function user_can_publish_their_own_event(): void
+    {
+        $user  = $this->makeUser();
         $event = Event::factory()->create([
             'user_id' => $user->id,
-            'status' => 'draft',
+            'status'  => 'draft',
         ]);
 
         $this->actingAs($user)
@@ -164,7 +224,7 @@ class EventCreateTest extends TestCase
 
         $event = Event::factory()->create([
             'user_id' => $owner->id,
-            'status' => 'draft',
+            'status'  => 'draft',
         ]);
 
         $this->actingAs($other)

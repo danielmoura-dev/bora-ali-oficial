@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Onboarding\OnboardingController;
@@ -125,3 +126,6 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
 // Evento público — depois das rotas estáticas para não capturar "criar" e "meus"
 Route::get('/eventos/{slug}', [EventController::class, 'show'])->name('events.show');
+
+// API pública — campos dinâmicos por categoria
+Route::get('/api/categories/{slug}/fields', [CategoryController::class, 'fields'])->name('api.categories.fields');

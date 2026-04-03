@@ -14,6 +14,7 @@ class Event extends Model
 
     protected $fillable = [
         'user_id',
+        'category_id',
         'title',
         'slug',
         'description',
@@ -26,26 +27,31 @@ class Event extends Model
         'ends_at',
         'status',
         'is_free',
+        'absorb_service_fee',
+        'ticket_nomenclature',
         'payment_provider',
         'payment_mode',
         'payment_methods',
     ];
 
     protected $attributes = [
-        'status' => 'draft',
-        'is_free' => false,
-        'payment_provider' => 'mercadopago',
-        'payment_mode' => 'direct',
-        'payment_methods' => '["pix"]',
+        'status'              => 'draft',
+        'is_free'             => false,
+        'absorb_service_fee'  => false,
+        'ticket_nomenclature' => 'ingresso',
+        'payment_provider'    => 'mercadopago',
+        'payment_mode'        => 'direct',
+        'payment_methods'     => '["pix"]',
     ];
 
     protected function casts(): array
     {
         return [
-            'starts_at' => 'datetime',
-            'ends_at' => 'datetime',
-            'is_free' => 'boolean',
-            'payment_methods' => 'array',
+            'starts_at'           => 'datetime',
+            'ends_at'             => 'datetime',
+            'is_free'             => 'boolean',
+            'absorb_service_fee'  => 'boolean',
+            'payment_methods'     => 'array',
         ];
     }
 
@@ -54,6 +60,16 @@ class Event extends Model
     public function organizer()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function fieldValues()
+    {
+        return $this->hasMany(EventFieldValue::class)->with('field');
     }
 
     public function ticketTypes()
@@ -154,5 +170,14 @@ class Event extends Model
     {
         return $this->payment_provider === 'mercadopago'
             && $this->payment_mode === 'split';
+    }
+
+    public function ticketLabel(bool $plural = false, bool $capitalize = false): string
+    {
+        $label = $this->ticket_nomenclature === 'inscricao'
+            ? ($plural ? 'inscrições' : 'inscrição')
+            : ($plural ? 'ingressos' : 'ingresso');
+
+        return $capitalize ? ucfirst($label) : $label;
     }
 }
