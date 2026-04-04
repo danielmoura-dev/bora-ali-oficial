@@ -1,4 +1,4 @@
-name: 🚀 Deploy website on push to prod
+name: Deploy
 
 on:
   push:
@@ -74,7 +74,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_PORT: 22022
+          REMOTE_PORT: 22
           TARGET: ${{ secrets.TARGET_PROD }}
           EXCLUDE: "/dist/, /node_modules/, /vendor/"
           SCRIPT_AFTER: |
